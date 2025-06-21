@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'screens/home_screen.dart';
+import 'widgets/main_navigation.dart';
 import 'providers/todo_provider.dart';
 
 void main() {
@@ -18,11 +18,11 @@ class MyApp extends StatelessWidget {
         title: 'Day Care',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-          primarySwatch: Colors.blue,
+          primarySwatch: Colors.green,
           primaryColor: Colors.blue[600],
           scaffoldBackgroundColor: Colors.grey[50],
           appBarTheme: AppBarTheme(
-            backgroundColor: Colors.blue[600],
+            backgroundColor: Colors.green[600],
             elevation: 0,
             centerTitle: true,
             titleTextStyle: const TextStyle(
@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
             ),
           ),
         ),
-        home: const HomeScreen(),
+        home: const MainNavigation(),
       ),
     );
   }

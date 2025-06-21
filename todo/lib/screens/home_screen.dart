@@ -16,7 +16,7 @@ class HomeScreen extends StatelessWidget {
           children: [
             Icon(Icons.access_time, size: 28),
             SizedBox(width: 8),
-            Text('Day Care'),
+            Text('To Do List'),
           ],
         ),
       ),

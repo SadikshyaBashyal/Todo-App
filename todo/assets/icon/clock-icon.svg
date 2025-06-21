@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0175C2;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0056A3;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="512" cy="512" r="480" fill="url(#bg)" stroke="#ffffff" stroke-width="32"/>
+  
+  <!-- Clock face -->
+  <circle cx="512" cy="512" r="400" fill="none" stroke="#ffffff" stroke-width="8"/>
+  
+  <!-- Clock center dot -->
+  <circle cx="512" cy="512" r="24" fill="#ffffff"/>
+  
+  <!-- Hour hand -->
+  <line x1="512" y1="512" x2="512" y2="280" stroke="#ffffff" stroke-width="24" stroke-linecap="round"/>
+  
+  <!-- Minute hand -->
+  <line x1="512" y1="512" x2="680" y2="512" stroke="#ffffff" stroke-width="16" stroke-linecap="round"/>
+  
+  <!-- Clock numbers -->
+  <text x="512" y="180" text-anchor="middle" fill="#ffffff" font-size="80" font-weight="bold">12</text>
+  <text x="840" y="540" text-anchor="middle" fill="#ffffff" font-size="80" font-weight="bold">3</text>
+  <text x="512" y="900" text-anchor="middle" fill="#ffffff" font-size="80" font-weight="bold">6</text>
+  <text x="180" y="540" text-anchor="middle" fill="#ffffff" font-size="80" font-weight="bold">9</text>
+</svg> 
