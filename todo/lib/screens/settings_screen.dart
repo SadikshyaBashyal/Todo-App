@@ -54,9 +54,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildProfileSection() {
     return Card(
-      margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.all(20),
       child: Padding(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(20),
         child: Column(
           children: [
             const CircleAvatar(
