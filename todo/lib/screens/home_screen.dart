@@ -16,25 +16,29 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Consumer<TodoProvider>(
-        builder: (context, todoProvider, child) {
-          return Column(
-            children: [
-              // Header with stats and filters
-              _buildHeader(todoProvider),
-              
-              // Filter chips
-              _buildFilterChips(todoProvider),
-              
-              // Todo list
-              Expanded(
-                child: todoProvider.filteredTodos.isEmpty
-                    ? _buildEmptyState()
-                    : _buildTodoList(todoProvider),
-              ),
-            ],
-          );
-        },
+      body: SafeArea(
+        child: Consumer<TodoProvider>(
+          builder: (context, todoProvider, child) {
+            return Column(
+              children: [
+                // Header with stats and filters
+                _buildHeader(todoProvider),
+                
+                // Filter chips
+                Flexible(
+                  child: _buildFilterChips(todoProvider),
+                ),
+                
+                // Todo list
+                Expanded(
+                  child: todoProvider.filteredTodos.isEmpty
+                      ? _buildEmptyState()
+                      : _buildTodoList(todoProvider),
+                ),
+              ],
+            );
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddTodoDialog(context),
@@ -162,73 +166,78 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildFilterChips(TodoProvider todoProvider) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // Filter options
-          Row(
-            children: [
-              const Spacer(),
-              TextButton(
-                onPressed: () => todoProvider.clearFilters(),
-                child: const Text('Clear'),
+      child: SingleChildScrollView(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Filter options
+            Row(
+              children: [
+                const Spacer(),
+                TextButton(
+                  onPressed: () => todoProvider.clearFilters(),
+                  child: const Text('Clear'),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            
+            // Status filters
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _buildFilterChip('All', 'all', todoProvider.filter),
+                _buildFilterChip('Today', 'today', todoProvider.filter),
+                _buildFilterChip('This Week', 'week', todoProvider.filter),
+                _buildFilterChip('Overdue', 'overdue', todoProvider.filter),
+                _buildFilterChip('Completed', 'completed', todoProvider.filter),
+                _buildFilterChip('Recurring', 'recurring', todoProvider.filter),
+              ],
+            ),
+            
+            const SizedBox(height: 12),
+            
+            // Priority filters
+            const Text(
+              'Priority:',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
               ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          
-          // Status filters
-          Wrap(
-            spacing: 8,
-            children: [
-              _buildFilterChip('All', 'all', todoProvider.filter),
-              _buildFilterChip('Today', 'today', todoProvider.filter),
-              _buildFilterChip('This Week', 'week', todoProvider.filter),
-              _buildFilterChip('Overdue', 'overdue', todoProvider.filter),
-              _buildFilterChip('Completed', 'completed', todoProvider.filter),
-              _buildFilterChip('Recurring', 'recurring', todoProvider.filter),
-            ],
-          ),
-          
-          const SizedBox(height: 12),
-          
-          // Priority filters
-          const Text(
-            'Priority:',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
             ),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            children: [
-              _buildPriorityChip('Urgent', Priority.urgent, todoProvider.selectedPriority),
-              _buildPriorityChip('High', Priority.high, todoProvider.selectedPriority),
-              _buildPriorityChip('Medium', Priority.medium, todoProvider.selectedPriority),
-              _buildPriorityChip('Low', Priority.low, todoProvider.selectedPriority),
-            ],
-          ),
-          
-          const SizedBox(height: 12),
-          
-          // Tag filters
-          const Text(
-            'Tags:',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _buildPriorityChip('Urgent', Priority.urgent, todoProvider.selectedPriority),
+                _buildPriorityChip('High', Priority.high, todoProvider.selectedPriority),
+                _buildPriorityChip('Medium', Priority.medium, todoProvider.selectedPriority),
+                _buildPriorityChip('Low', Priority.low, todoProvider.selectedPriority),
+              ],
             ),
-          ),
-          const SizedBox(height: 8),
-          Wrap(
-            spacing: 8,
-            children: todoProvider.availableTags.map((tag) {
-              return _buildTagChip(tag, todoProvider.selectedTag);
-            }).toList(),
-          ),
-        ],
+            
+            const SizedBox(height: 12),
+            
+            // Tag filters
+            const Text(
+              'Tags:',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: todoProvider.availableTags.map((tag) {
+                return _buildTagChip(tag, todoProvider.selectedTag);
+              }).toList(),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -323,7 +332,12 @@ class _HomeScreenState extends State<HomeScreen> {
     });
 
     return ListView.builder(
-      padding: const EdgeInsets.only(bottom: 80),
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).size.width > 600 ? 140 : 120, // Account for FAB + bottom nav
+        left: 16,
+        right: 16,
+        top: 8,
+      ),
       itemCount: todos.length,
       itemBuilder: (context, index) {
         return Dismissible(
@@ -356,44 +370,47 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildEmptyState() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            Icons.task_alt,
-            size: 80,
-            color: Colors.grey[400],
-          ),
-          const SizedBox(height: 16),
-          Text(
-            'No tasks found',
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-              color: Colors.grey[600],
+    return Padding(
+      padding: const EdgeInsets.all(20),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.task_alt,
+              size: 80,
+              color: Colors.grey[400],
             ),
-          ),
-          const SizedBox(height: 8),
-          Text(
-            'Add a new task to get started',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey[500],
+            const SizedBox(height: 16),
+            Text(
+              'No tasks found',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey[600],
+              ),
             ),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton.icon(
-            onPressed: () => _showAddTodoDialog(context),
-            icon: const Icon(Icons.add_task),
-            label: const Text('Add Task'),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color.fromARGB(255, 223, 85, 197),
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+            const SizedBox(height: 8),
+            Text(
+              'Add a new task to get started',
+              style: TextStyle(
+                fontSize: 16,
+                color: Colors.grey[500],
+              ),
             ),
-          ),
-        ],
+            const SizedBox(height: 24),
+            ElevatedButton.icon(
+              onPressed: () => _showAddTodoDialog(context),
+              icon: const Icon(Icons.add_task),
+              label: const Text('Add Task'),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color.fromARGB(255, 223, 85, 197),
+                foregroundColor: Colors.white,
+                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

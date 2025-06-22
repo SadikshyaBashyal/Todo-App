@@ -34,23 +34,23 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       // appBar: AppBar( ... ),
-      body: Column(
-        children: [
-          // Calendar Header
-          _buildCalendarHeader(),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Calendar Header
+            _buildCalendarHeader(),
 
-          // NEW: Days of the week header, only for mobile layout
-          if (_isMobileLayout) _buildDaysOfWeekHeaderMobile(),
-          if (!_isMobileLayout) _buildDaysOfWeekHeaderDesktop(),
+            // NEW: Days of the week header, only for mobile layout
+            if (_isMobileLayout) _buildDaysOfWeekHeaderMobile(),
+            if (!_isMobileLayout) _buildDaysOfWeekHeaderDesktop(),
 
-          // Calendar Grid
-          Expanded(
-            child: _buildCalendarGrid(),
-          ),
+            // Calendar Grid - Let it size naturally
+            _buildCalendarGrid(),
 
-          // Events for Selected Day
-          _buildSelectedDayEvents(),
-        ],
+            // Events for Selected Day
+            _buildSelectedDayEvents(),
+          ],
+        ),
       ),
     );
   }
@@ -168,20 +168,17 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final firstWeekday = firstDayOfMonth.weekday;
 
     // Determine cross axis count based on platform
-    // MODIFIED: Used the new getter `_isMobileLayout` for consistency
     int crossAxisCount = _isMobileLayout ? 7 : 14;
 
-    return GridView.builder(
-      padding: const EdgeInsets.all(15),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: crossAxisCount,
-        childAspectRatio: 1.5,
-        crossAxisSpacing: 10,
-        mainAxisSpacing: 10,
-      ),
-      // The grid needs to be large enough for 6 weeks to handle all month layouts
-      itemCount: _isMobileLayout ? 42 : 56, // 6*7 for mobile, 4*14 for web/desktop
-      itemBuilder: (context, index) {
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      padding: const EdgeInsets.all(10),
+      crossAxisCount: crossAxisCount,
+      childAspectRatio: 1.5,
+      crossAxisSpacing: 10,
+      mainAxisSpacing: 10,
+      children: List.generate(_isMobileLayout ? 42 : 56, (index) {
         // This logic correctly places the first day based on a Monday start
         final dayOffset = index - (firstWeekday - 1);
         final day = dayOffset + 1;
@@ -210,10 +207,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   ? const Color.fromARGB(255, 30, 229, 63)
                   : isToday
                       ? Colors.blue[100]
-                      : Colors.transparent,
+                      : Colors.grey[300],
               borderRadius: BorderRadius.circular(4),
               border: Border.all(
-                color: isToday ? Colors.blue[300]! : Colors.grey[300]!,
+                color: isToday ? Colors.blue[300]! : Colors.grey[500]!,
                 width: isToday ? 1.5 : 0.5,
               ),
             ),
@@ -234,14 +231,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ),
           ),
         );
-      },
+      }),
     );
   }
 
   Widget _buildSelectedDayEvents() {
     // ... (no changes in this method)
     return Container(
-      height: 200,
+      height: 500,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.grey[200],

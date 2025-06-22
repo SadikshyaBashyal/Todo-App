@@ -1,4 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+// import 'dart:io';
+// import 'dart:typed_data';
+// import 'dart:convert';
+// import 'package:flutter/foundation.dart' show kIsWeb;
+import 'lichal_front_page.dart';
+import '../helpers/image_helper.dart';
 // import 'package:intl/intl.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -15,6 +22,37 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _selectedTimeFormat = '12-hour';
   String _selectedDateFormat = 'MM/DD/YYYY';
   String _selectedLanguage = 'English';
+  
+  String _userName = 'User';
+  String _userPhotoPath = '';
+  int _loginStreak = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  Future<void> _loadUserData() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _userName = prefs.getString('name') ?? 'User';
+      _userPhotoPath = prefs.getString('photoPath') ?? '';
+      _loginStreak = prefs.getInt('loginStreak') ?? 0;
+    });
+  }
+
+  Future<void> _logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('isLoggedIn', false);
+    
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (context) => const LichalFrontPage()),
+        (route) => false,
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -59,19 +97,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
         padding: const EdgeInsets.all(20),
         child: Column(
           children: [
-            const CircleAvatar(
+            CircleAvatar(
               radius: 40,
               backgroundColor: Colors.blue,
-              child: Icon(
-                Icons.person,
-                size: 40,
-                color: Colors.white,
+              child: ClipOval(
+                child: _buildProfileImage(),
               ),
             ),
             const SizedBox(height: 12),
-            const Text(
-              'Day Care User',
-              style: TextStyle(
+            Text(
+              _userName,
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
@@ -89,11 +125,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 _buildProfileStat('Tasks', '24'),
                 _buildProfileStat('Completed', '18'),
-                _buildProfileStat('Streak', '7 days'),
+                _buildProfileStat('Streak', '$_loginStreak days'),
               ],
+            ),
+            const SizedBox(height: 20),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: _logout,
+                icon: const Icon(Icons.logout),
+                label: const Text('Logout'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.red,
+                  foregroundColor: Colors.white,
+                ),
+              ),
             ),
           ],
         ),
+      ),
+    );
+  }
+
+  Widget _buildProfileImage() {
+    return ImageHelper.buildImageWidget(
+      _userPhotoPath,
+      width: 80,
+      height: 80,
+      fit: BoxFit.cover,
+      fallbackWidget: const Icon(
+        Icons.person,
+        size: 40,
+        color: Colors.white,
       ),
     );
   }
