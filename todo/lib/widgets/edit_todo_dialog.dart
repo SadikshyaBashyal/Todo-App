@@ -102,9 +102,10 @@ class EditTodoDialogState extends State<EditTodoDialog> {
       final description = _descriptionController.text.trim();
       
       Provider.of<TodoProvider>(context, listen: false).updateTodo(
-        widget.todo.id,
-        title,
-        description,
+        widget.todo.copyWith(
+          title: title,
+          description: description,
+        ),
       );
       
       Navigator.of(context).pop();

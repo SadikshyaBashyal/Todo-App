@@ -84,8 +84,6 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(Icons.schedule, size: 28),
-            SizedBox(width: 8),
-            Text('Daily Routine'),
           ],
         ),
         actions: [
@@ -138,13 +136,6 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Text(
-                'Daily Routine Schedule',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.8),
-                  fontSize: 14,
-                ),
-              ),
             ],
           ),
         ],
@@ -168,14 +159,6 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    'Today\'s Progress',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.grey[800],
-                    ),
-                  ),
                   Text(
                     '$completedCount/$totalCount completed',
                     style: TextStyle(

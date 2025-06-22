@@ -12,108 +12,254 @@ class TodoItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Dismissible(
-      key: Key(todo.id),
-      direction: DismissDirection.endToStart,
-      background: Container(
-        alignment: Alignment.centerRight,
-        padding: const EdgeInsets.only(right: 20),
-        color: Colors.red,
-        child: const Icon(
-          Icons.delete,
-          color: Colors.white,
+    return Card(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: BorderSide(
+          color: todo.isOverdue ? Colors.red : Colors.transparent,
+          width: 2,
         ),
       ),
-      onDismissed: (direction) {
-        Provider.of<TodoProvider>(context, listen: false).deleteTodo(todo.id);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: const Text('Task deleted'),
-            action: SnackBarAction(
-              label: 'Undo',
-              onPressed:  () {
-              },
-            ),
-          ),
-        );
-      },
-      child: Card(
-        margin: const EdgeInsets.only(bottom: 8),
-        child: ListTile(
-          leading: Checkbox(
-            value: todo.isCompleted,
-            onChanged: (value) {
-              Provider.of<TodoProvider>(context, listen: false).toggleTodo(todo.id);
-            },
-            activeColor: Colors.blue[600],
-          ),
-          title: Text(
-            todo.title,
-            style: TextStyle(
-              decoration: todo.isCompleted ? TextDecoration.lineThrough : null,
-              color: todo.isCompleted ? Colors.grey[600] : Colors.black87,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
-          subtitle: Column(
+      child: InkWell(
+        onTap: () => _showEditDialog(context),
+        borderRadius: BorderRadius.circular(12),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              if (todo.description.isNotEmpty)
-                Text(
-                  todo.description,
-                  style: TextStyle(
-                    decoration: todo.isCompleted ? TextDecoration.lineThrough : null,
-                    color: todo.isCompleted ? Colors.grey[500] : Colors.grey[600],
-                    fontSize: 12,
+              // Header with title, priority, and actions
+              Row(
+                children: [
+                  Expanded(
+                    child: Row(
+                      children: [
+                        // Priority indicator
+                        Container(
+                          width: 4,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            color: todo.priorityColor,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        // Title and completion status
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                todo.title,
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.w600,
+                                  decoration: todo.isCompleted 
+                                      ? TextDecoration.lineThrough 
+                                      : null,
+                                  color: todo.isCompleted 
+                                      ? Colors.grey[600] 
+                                      : Colors.black,
+                                ),
+                              ),
+                              if (todo.description != null && todo.description!.isNotEmpty) ...[
+                                const SizedBox(height: 4),
+                                Text(
+                                  todo.description!,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[600],
+                                    decoration: todo.isCompleted 
+                                        ? TextDecoration.lineThrough 
+                                        : null,
+                                  ),
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ],
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-              const SizedBox(height: 4),
-              Text(
-                'Created: ${DateFormat('MMM dd, yyyy').format(todo.createdAt)}',
-                style: TextStyle(
-                  color: Colors.grey[500],
-                  fontSize: 11,
-                ),
+                  // Actions
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // Priority badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: todo.priorityColor.withValues(alpha: 0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          todo.priorityText,
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.bold,
+                            color: todo.priorityColor,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      // Complete checkbox
+                      Checkbox(
+                        value: todo.isCompleted,
+                        onChanged: (value) {
+                          Provider.of<TodoProvider>(context, listen: false)
+                              .toggleTodo(todo.id);
+                        },
+                        activeColor: const Color.fromARGB(255, 223, 85, 197),
+                      ),
+                    ],
+                  ),
+                ],
               ),
-              if (todo.completedAt != null)
-                Text(
-                  'Completed: ${DateFormat('MMM dd, yyyy').format(todo.completedAt!)}',
-                  style: TextStyle(
-                    color: Colors.green[600],
-                    fontSize: 11,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-            ],
-          ),
-          trailing: PopupMenuButton<String>(
-            onSelected: (value) {
-              if (value == 'edit') {
-                _showEditDialog(context);
-              } else if (value == 'delete') {
-                Provider.of<TodoProvider>(context, listen: false).deleteTodo(todo.id);
-              }
-            },
-            itemBuilder: (context) => [
-              const PopupMenuItem(
-                value: 'edit',
-                child: Row(
+              
+              const SizedBox(height: 12),
+              
+              // Due date and time
+              if (todo.dueDate != null) ...[
+                Row(
                   children: [
-                    Icon(Icons.edit, size: 18),
-                    SizedBox(width: 8),
-                    Text('Edit'),
+                    Icon(
+                      Icons.calendar_today,
+                      size: 16,
+                      color: todo.isOverdue ? Colors.red : Colors.grey[600],
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      DateFormat('MMM dd, yyyy').format(todo.dueDate!),
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: todo.isOverdue ? Colors.red : Colors.grey[600],
+                        fontWeight: todo.isOverdue ? FontWeight.bold : FontWeight.normal,
+                      ),
+                    ),
+                    if (todo.dueTime != null) ...[
+                      const SizedBox(width: 16),
+                      Icon(
+                        Icons.access_time,
+                        size: 16,
+                        color: todo.isOverdue ? Colors.red : Colors.grey[600],
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        todo.dueTime!.format(context),
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: todo.isOverdue ? Colors.red : Colors.grey[600],
+                          fontWeight: todo.isOverdue ? FontWeight.bold : FontWeight.normal,
+                        ),
+                      ),
+                    ],
+                    if (todo.isOverdue) ...[
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: Colors.red,
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        child: const Text(
+                          'OVERDUE',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 10,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
                   ],
                 ),
-              ),
-              const PopupMenuItem(
-                value: 'delete',
-                child: Row(
+                const SizedBox(height: 8),
+              ],
+              
+              // Tags
+              if (todo.tags.isNotEmpty) ...[
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 4,
+                  children: todo.tags.map((tag) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: Colors.blue.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+                      ),
+                      child: Text(
+                        tag,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          color: Colors.blue,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                const SizedBox(height: 8),
+              ],
+              
+              // Recurring info
+              if (todo.isRecurring) ...[
+                Row(
                   children: [
-                    Icon(Icons.delete, size: 18, color: Colors.red),
-                    SizedBox(width: 8),
-                    Text('Delete', style: TextStyle(color: Colors.red)),
+                    const Icon(
+                      Icons.repeat,
+                      size: 16,
+                      color: Colors.orange,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      'Recurring: ${todo.recurringText}',
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: Colors.orange,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    if (todo.endDate != null) ...[
+                      const SizedBox(width: 8),
+                      Text(
+                        'until ${DateFormat('MMM dd, yyyy').format(todo.endDate!)}',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ],
                   ],
                 ),
+                const SizedBox(height: 8),
+              ],
+              
+              // Created date
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Created: ${DateFormat('MMM dd, yyyy').format(todo.createdAt)}',
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.grey[500],
+                    ),
+                  ),
+                  if (todo.isCompleted && todo.completedAt != null)
+                    Text(
+                      'Completed: ${DateFormat('MMM dd, yyyy').format(todo.completedAt!)}',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: Colors.grey[500],
+                      ),
+                    ),
+                ],
               ),
             ],
           ),

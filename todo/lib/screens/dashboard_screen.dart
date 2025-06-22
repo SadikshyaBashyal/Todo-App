@@ -9,20 +9,18 @@ class DashboardScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Icon(Icons.dashboard, size: 32, color: Colors.white),
-            SizedBox(width: 9),
-            Text('Dashboard', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-          ],
-        ),
-      ),
+      // appBar: AppBar(
+      //   title: const Row(
+      //     mainAxisSize: MainAxisSize.min,
+      //     children: [
+      //       Icon(Icons.dashboard, size: 32, color: Colors.white),
+      //     ],
+      //   ),
+      // ),
       body: Consumer<TodoProvider>(
         builder: (context, todoProvider, child) {
           return SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(5),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -32,7 +30,7 @@ class DashboardScreen extends StatelessWidget {
                 
                 // Quick Stats
                 Padding(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(5),
                   child: _buildStatsRow(todoProvider),
                 ),
                 const SizedBox(height: 20),
@@ -123,7 +121,7 @@ class DashboardScreen extends StatelessWidget {
         Expanded(
           child: _buildStatCard(
             'Active Tasks',
-            '${todoProvider.activeTodosCount}',
+            '${todoProvider.todos.where((todo) => !todo.isCompleted).length}',
             Icons.task_alt,
             Colors.orange,
           ),
@@ -132,7 +130,7 @@ class DashboardScreen extends StatelessWidget {
         Expanded(
           child: _buildStatCard(
             'Completed',
-            '${todoProvider.completedTodosCount}',
+            '${todoProvider.todos.where((todo) => todo.isCompleted).length}',
             Icons.check_circle,
             Colors.green,
           ),

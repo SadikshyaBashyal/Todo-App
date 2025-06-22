@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../screens/dashboard_screen.dart';
 import '../screens/calendar_screen.dart';
 import '../screens/daily_routine_screen.dart';
@@ -32,10 +33,18 @@ class _MainNavigationState extends State<MainNavigation> {
   void initState() {
     super.initState();
     _currentTime = DateTime.now();
+    _loadTimeFormatPreference();
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         _currentTime = DateTime.now();
       });
+    });
+  }
+
+  Future<void> _loadTimeFormatPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    setState(() {
+      _is24HourFormat = prefs.getString('selectedTimeFormat') == '24-hour';
     });
   }
 
@@ -64,12 +73,12 @@ class _MainNavigationState extends State<MainNavigation> {
             ),
           ],
         ),
-        backgroundColor: const Color.fromARGB(255, 223, 85, 197),
+        backgroundColor: const Color.fromARGB(255, 85, 223, 108),
         elevation: 2,
         actions: [
           // Time Display
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
             decoration: BoxDecoration(
               color: Colors.lightBlue.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(8),
@@ -106,6 +115,7 @@ class _MainNavigationState extends State<MainNavigation> {
                 setState(() {
                   _is24HourFormat = !_is24HourFormat;
                 });
+                _saveTimeFormatPreference();
               }
             },
             itemBuilder: (context) => [
@@ -138,6 +148,10 @@ class _MainNavigationState extends State<MainNavigation> {
           setState(() {
             _currentIndex = index;
           });
+          // Refresh time format preference when settings is selected
+          if (index == 4) { // Settings tab
+            _loadTimeFormatPreference();
+          }
         },
         selectedItemColor: const Color.fromARGB(255, 50, 202, 57),
         unselectedItemColor: const Color.fromARGB(255, 94, 93, 93),
@@ -169,5 +183,10 @@ class _MainNavigationState extends State<MainNavigation> {
         ],
       ),
     );
+  }
+
+  Future<void> _saveTimeFormatPreference() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('selectedTimeFormat', _is24HourFormat ? '24-hour' : '12-hour');
   }
 } 
