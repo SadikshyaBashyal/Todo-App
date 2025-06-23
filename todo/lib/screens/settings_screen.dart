@@ -26,6 +26,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _userName = 'User';
   String _userPhotoPath = '';
   int _loginStreak = 0;
+  String _userEmail = 'user@daycare.com';
 
   @override
   void initState() {
@@ -39,6 +40,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       _userName = prefs.getString('name') ?? 'User';
       _userPhotoPath = prefs.getString('photoPath') ?? '';
       _loginStreak = prefs.getInt('loginStreak') ?? 0;
+      _userEmail = prefs.getString('username') ?? 'user@daycare.com';
     });
   }
 
@@ -113,7 +115,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ),
             Text(
-              'user@daycare.com',
+              _userEmail,
               style: TextStyle(
                 color: Colors.grey[600],
                 fontSize: 14,

@@ -19,23 +19,16 @@ class _HomeScreenState extends State<HomeScreen> {
       body: SafeArea(
         child: Consumer<TodoProvider>(
           builder: (context, todoProvider, child) {
-            return Column(
-              children: [
-                // Header with stats and filters
-                _buildHeader(todoProvider),
-                
-                // Filter chips
-                Flexible(
-                  child: _buildFilterChips(todoProvider),
-                ),
-                
-                // Todo list
-                Expanded(
-                  child: todoProvider.filteredTodos.isEmpty
+            return SingleChildScrollView(
+              child: Column(
+                children: [
+                  _buildHeader(todoProvider),
+                  _buildFilterChips(todoProvider),
+                  todoProvider.filteredTodos.isEmpty
                       ? _buildEmptyState()
-                      : _buildTodoList(todoProvider),
-                ),
-              ],
+                      : _buildTodoListSequential(todoProvider),
+                ],
+              ),
             );
           },
         ),
@@ -43,7 +36,7 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: FloatingActionButton(
         onPressed: () => _showAddTodoDialog(context),
         backgroundColor: const Color.fromARGB(255, 223, 85, 197),
-        child: const Icon(Icons.add, color: Colors.white),
+        child: const Icon(Icons.add_task, color: Colors.white, size: 35,),
       ),
     );
   }
@@ -57,10 +50,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: const EdgeInsets.all(5),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color.fromARGB(255, 253, 253, 253),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withValues(alpha: 0.1),
+            color: const Color.fromARGB(255, 140, 139, 139).withValues(alpha: 0.1),
             spreadRadius: 1,
             blurRadius: 6,
             offset: const Offset(0, 2),
@@ -84,7 +77,7 @@ class _HomeScreenState extends State<HomeScreen> {
           //   ],
           // ),
           
-          const SizedBox(height: 20),
+          const SizedBox(height: 8),
           
           // Stats cards
           Row(
@@ -154,9 +147,13 @@ class _HomeScreenState extends State<HomeScreen> {
           Text(
             label,
             style: TextStyle(
-              fontSize: 12,
-              color: color.withValues(alpha: 0.8),
+              fontSize: Theme.of(context).platform == TargetPlatform.android || Theme.of(context).platform == TargetPlatform.iOS ? 14 : 20,
+              color: color.withValues(alpha: 1),
+              fontWeight: FontWeight.w600,
             ),
+            textAlign: TextAlign.center,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
         ],
       ),
@@ -165,7 +162,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildFilterChips(TodoProvider todoProvider) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: Theme.of(context).platform == TargetPlatform.android || Theme.of(context).platform == TargetPlatform.iOS ? 0 : 8),
       child: SingleChildScrollView(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -176,11 +173,11 @@ class _HomeScreenState extends State<HomeScreen> {
                 const Spacer(),
                 TextButton(
                   onPressed: () => todoProvider.clearFilters(),
-                  child: const Text('Clear'),
+                  child: const Text('Clear', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
                 ),
               ],
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 0),
             
             // Status filters
             Wrap(
@@ -196,7 +193,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             
             // Priority filters
             const Text(
@@ -206,7 +203,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -218,7 +215,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
             
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             
             // Tag filters
             const Text(
@@ -228,7 +225,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 fontWeight: FontWeight.w600,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Wrap(
               spacing: 8,
               runSpacing: 8,
@@ -309,63 +306,10 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildTodoList(TodoProvider todoProvider) {
+  Widget _buildTodoListSequential(TodoProvider todoProvider) {
     final todos = todoProvider.filteredTodos;
-    
-    // Sort todos by priority and due date
-    todos.sort((a, b) {
-      // First by completion status
-      if (a.isCompleted != b.isCompleted) {
-        return a.isCompleted ? 1 : -1;
-      }
-      // Then by priority
-      final priorityOrder = {Priority.urgent: 0, Priority.high: 1, Priority.medium: 2, Priority.low: 3};
-      final priorityDiff = priorityOrder[a.priority]! - priorityOrder[b.priority]!;
-      if (priorityDiff != 0) return priorityDiff;
-      // Then by due date
-      if (a.dueDate != null && b.dueDate != null) {
-        return a.dueDate!.compareTo(b.dueDate!);
-      }
-      if (a.dueDate != null) return -1;
-      if (b.dueDate != null) return 1;
-      return 0;
-    });
-
-    return ListView.builder(
-      padding: EdgeInsets.only(
-        bottom: MediaQuery.of(context).size.width > 600 ? 140 : 120, // Account for FAB + bottom nav
-        left: 16,
-        right: 16,
-        top: 8,
-      ),
-      itemCount: todos.length,
-      itemBuilder: (context, index) {
-        return Dismissible(
-          key: Key(todos[index].id),
-          direction: DismissDirection.endToStart,
-          background: Container(
-            alignment: Alignment.centerRight,
-            padding: const EdgeInsets.only(right: 20),
-            color: Colors.red,
-            child: const Icon(Icons.delete, color: Colors.white),
-          ),
-          onDismissed: (direction) {
-            todoProvider.deleteTodo(todos[index].id);
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: const Text('Task deleted'),
-                action: SnackBarAction(
-                  label: 'Undo',
-                  onPressed: () {
-                    // Note: In a real app, you'd implement undo functionality
-                  },
-                ),
-              ),
-            );
-          },
-          child: TodoItem(todo: todos[index]),
-        );
-      },
+    return Column(
+      children: todos.map((todo) => TodoItem(todo: todo)).toList(),
     );
   }
 
