@@ -4,6 +4,7 @@ import '../models/todo.dart';
 import '../providers/todo_provider.dart';
 import '../widgets/todo_item.dart';
 import '../widgets/add_todo_dialog.dart';
+// import 'login_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -309,7 +310,28 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildTodoListSequential(TodoProvider todoProvider) {
     final todos = todoProvider.filteredTodos;
     return Column(
-      children: todos.map((todo) => TodoItem(todo: todo)).toList(),
+      children: [
+        ...todos.map((todo) => TodoItem(todo: todo)),
+        const SizedBox(height: 24),
+        Center(
+          child: ElevatedButton.icon(
+            onPressed: () async {
+              // Delete all completed todos
+              final provider = Provider.of<TodoProvider>(context, listen: false);
+              await provider.deleteAllCompletedTodos();
+            },
+            icon: const Icon(Icons.delete_forever, color: Colors.white),
+            label: const Text('Delete All Completed', style: TextStyle(color: Colors.white)),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.red,
+              foregroundColor: Colors.white,
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ),
+        const SizedBox(height: 24),
+      ],
     );
   }
 
@@ -365,4 +387,11 @@ class _HomeScreenState extends State<HomeScreen> {
       builder: (context) => const AddTodoDialog(),
     );
   }
+
+  // void _navigateToLogin() {
+  //   Navigator.of(context).pushAndRemoveUntil(
+  //     MaterialPageRoute(builder: (_) => const LoginScreen()),
+  //     (route) => false,
+  //   );
+  // }
 } 

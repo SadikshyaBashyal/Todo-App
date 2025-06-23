@@ -107,13 +107,25 @@ class TodoItem extends StatelessWidget {
                       ),
                       const SizedBox(width: 8),
                       // Complete checkbox
-                      Checkbox(
-                        value: todo.isCompleted,
-                        onChanged: (value) {
-                          Provider.of<TodoProvider>(context, listen: false)
-                              .toggleTodo(todo.id);
-                        },
-                        activeColor: const Color.fromARGB(255, 223, 85, 197),
+                      Column(
+                        children: [
+                          Checkbox(
+                            value: todo.isCompleted,
+                            onChanged: (value) {
+                              Provider.of<TodoProvider>(context, listen: false)
+                                  .toggleTodo(todo.id);
+                            },
+                            activeColor: const Color.fromARGB(255, 223, 85, 197),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () {
+                              Provider.of<TodoProvider>(context, listen: false)
+                                  .deleteTodo(todo.id);
+                            },
+                            tooltip: 'Delete Task',
+                          ),
+                        ],
                       ),
                     ],
                   ),

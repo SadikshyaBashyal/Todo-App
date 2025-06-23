@@ -2,6 +2,10 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/todo.dart';
+import '../models/user.dart';
+//  import 'package:firebase_auth/firebase_auth.dart';
+// import 'package:cloud_firestore/cloud_firestore.dart';
+
 
 class TodoProvider with ChangeNotifier {
   List<Todo> _todos = [];
@@ -10,11 +14,21 @@ class TodoProvider with ChangeNotifier {
   String? _selectedTag;
   Priority? _selectedPriority;
 
+  // Multi-account support
+  String? _currentUsername;
+  List<AppUser> _users = [];
+
+  // For Firebase (commented out)
+  // final FirebaseAuth _auth = FirebaseAuth.instance;
+  // final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+
   List<Todo> get todos => _todos;
   List<String> get availableTags => _availableTags;
   String get filter => _filter;
   String? get selectedTag => _selectedTag;
   Priority? get selectedPriority => _selectedPriority;
+  String? get currentUsername => _currentUsername;
+  List<AppUser> get users => _users;
 
   List<Todo> get filteredTodos {
     List<Todo> filtered = _todos;
@@ -56,33 +70,97 @@ class TodoProvider with ChangeNotifier {
   List<Todo> get recurringTodos => _todos.where((todo) => todo.isRecurring).toList();
 
   TodoProvider() {
-    _loadTodos();
-    _loadTags();
+    _loadUsers();
+    _loadCurrentUser();
   }
 
-  Future<void> _loadTodos() async {
+  Future<void> _loadUsers() async {
     final prefs = await SharedPreferences.getInstance();
-    final todosJson = prefs.getStringList('todos') ?? [];
+    final usersJson = prefs.getStringList('users') ?? [];
+    _users = usersJson.map((json) => AppUser.fromJson(jsonDecode(json))).toList();
+    notifyListeners();
+  }
+
+  Future<void> _saveUsers() async {
+    final prefs = await SharedPreferences.getInstance();
+    final usersJson = _users.map((user) => jsonEncode(user.toJson())).toList();
+    await prefs.setStringList('users', usersJson);
+  }
+
+  Future<void> _loadCurrentUser() async {
+    final prefs = await SharedPreferences.getInstance();
+    _currentUsername = prefs.getString('currentUser');
+    if (_currentUsername != null) {
+      await _loadTodos();
+      await _loadTags();
+    }
+    notifyListeners();
+  }
+
+  Future<void> setCurrentUser(String username) async {
+    final prefs = await SharedPreferences.getInstance();
+    _currentUsername = username;
+    await prefs.setString('currentUser', username);
+    await _loadTodos();
+    await _loadTags();
+    notifyListeners();
+  }
+
+  Future<void> addUser(AppUser user) async {
+    _users.add(user);
+    await _saveUsers();
+    notifyListeners();
+  }
+
+  // LOCAL: Store todos as a map from username to list of todos
+  Future<void> _loadTodos() async {
+    if (_currentUsername == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    final todosJson = prefs.getStringList('todos_${_currentUsername!}') ?? [];
     _todos = todosJson.map((json) => Todo.fromJson(jsonDecode(json))).toList();
     notifyListeners();
   }
 
   Future<void> _saveTodos() async {
+    if (_currentUsername == null) return;
     final prefs = await SharedPreferences.getInstance();
     final todosJson = _todos.map((todo) => jsonEncode(todo.toJson())).toList();
-    await prefs.setStringList('todos', todosJson);
+    await prefs.setStringList('todos_${_currentUsername!}', todosJson);
   }
 
+  // LOCAL: Store tags per user
   Future<void> _loadTags() async {
+    if (_currentUsername == null) return;
     final prefs = await SharedPreferences.getInstance();
-    _availableTags = prefs.getStringList('tags') ?? ['daily', 'work', 'personal'];
+    _availableTags = prefs.getStringList('tags_${_currentUsername!}') ?? ['daily', 'work', 'personal'];
     notifyListeners();
   }
 
   Future<void> _saveTags() async {
+    if (_currentUsername == null) return;
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setStringList('tags', _availableTags);
+    await prefs.setStringList('tags_${_currentUsername!}', _availableTags);
   }
+
+  // --- Firebase logic (commented out) ---
+  // Future<void> loadTodosFromFirebase() async {
+  //   final user = _auth.currentUser;
+  //   if (user == null) return;
+  //   final snapshot = await _firestore.collection('todos').doc(user.uid).get();
+  //   if (snapshot.exists) {
+  //     final todosData = snapshot.data()?['todos'] as List<dynamic>;
+  //     _todos = todosData.map((json) => Todo.fromJson(json)).toList();
+  //     notifyListeners();
+  //   }
+  // }
+  //
+  // Future<void> saveTodosToFirebase() async {
+  //   final user = _auth.currentUser;
+  //   if (user == null) return;
+  //   await _firestore.collection('todos').doc(user.uid).set({
+  //     'todos': _todos.map((todo) => todo.toJson()).toList(),
+  //   });
+  // }
 
   void setFilter(String filter) {
     _filter = filter;
@@ -200,5 +278,11 @@ class TodoProvider with ChangeNotifier {
           return todo.customDays?.contains(date.weekday) ?? false;
       }
     }).toList();
+  }
+
+  Future<void> deleteAllCompletedTodos() async {
+    _todos.removeWhere((todo) => todo.isCompleted);
+    await _saveTodos();
+    notifyListeners();
   }
 }

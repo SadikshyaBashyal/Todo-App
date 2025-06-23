@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+// import 'package:shared_preferences/shared_preferences.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:typed_data';
 // import 'dart:convert';
 import '../helpers/image_helper.dart';
+import 'package:provider/provider.dart';
+import '../providers/todo_provider.dart';
+import '../models/user.dart';
+import 'home_screen.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -134,53 +138,34 @@ class _SignupScreenState extends State<SignupScreen> {
     );
   }
 
-  Future<void> _signUp() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
-
-    setState(() {
-      _isLoading = true;
-    });
-
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      
-      // Save user data
-      await prefs.setString('name', _nameController.text);
-      await prefs.setString('username', _usernameController.text);
-      await prefs.setString('password', _passwordController.text);
-      
-      // Save photo data based on platform
-      if (kIsWeb) {
-        if (_webImage != null) {
-          await prefs.setString('photoPath', ImageHelper.encodeImageForStorage(_webImage!));
-        } else {
-          await prefs.setString('photoPath', '');
-        }
-      } else {
-        // Mobile/Desktop - save file path
-        if (_selectedImage != null) {
-          await prefs.setString('photoPath', ImageHelper.encodeImageForStorage(_selectedImage!));
-        } else {
-          await prefs.setString('photoPath', '');
-        }
-      }
-      
-      await prefs.setBool('isLoggedIn', false);
-      await prefs.setInt('loginStreak', 0); // Initialize streak to 0
-
-      if (mounted) {
-        _showSnackBar('Account created successfully! Please login.');
-        Navigator.of(context).pop(); // Return to login page
-      }
-    } catch (e) {
-      _showSnackBar('Sign up failed: $e');
-    } finally {
+  Future<void> _signup() async {
+    setState(() { _isLoading = true; });
+    final provider = Provider.of<TodoProvider>(context, listen: false);
+    final username = _usernameController.text.trim();
+    final password = _passwordController.text.trim();
+    final name = _nameController.text.trim();
+    // Check for duplicate username
+    if (provider.users.any((u) => u.username == username)) {
       setState(() {
         _isLoading = false;
       });
+      return;
     }
+    final user = AppUser(
+      username: username,
+      password: password,
+      name: name,
+      photoPath: null, // Add photo logic if needed
+    );
+    await provider.addUser(user);
+    await provider.setCurrentUser(username);
+    if (mounted) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const HomeScreen()),
+        (route) => false,
+      );
+    }
+    setState(() { _isLoading = false; });
   }
 
   void _showSnackBar(String message) {
@@ -462,7 +447,7 @@ class _SignupScreenState extends State<SignupScreen> {
       width: double.infinity,
       height: 50,
       child: ElevatedButton(
-        onPressed: _isLoading ? null : _signUp,
+        onPressed: _isLoading ? null : _signup,
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.white,
           foregroundColor: const Color.fromARGB(255, 28, 70, 238),
