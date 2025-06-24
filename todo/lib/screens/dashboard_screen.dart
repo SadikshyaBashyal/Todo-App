@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/todo_provider.dart';
 import 'timeline_screen.dart';
+import 'all_tasks_screen.dart';
+import 'task_detail_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -40,7 +42,7 @@ class DashboardScreen extends StatelessWidget {
                 // const SizedBox(height: 20),
 
                 // Today's Tasks
-                _buildTodayTasks(todoProvider),
+                _buildTodayTasks(context, todoProvider),
                 const SizedBox(height: 20),
                 
                 // Quick Actions
@@ -223,7 +225,7 @@ class DashboardScreen extends StatelessWidget {
   //   );
   // }
 
-  Widget _buildTodayTasks(TodoProvider todoProvider) {
+  Widget _buildTodayTasks(BuildContext context, TodoProvider todoProvider) {
     final todayTodos = todoProvider.todos.where((todo) {
       final today = DateTime.now();
       final todoDate = DateTime(todo.createdAt.year, todo.createdAt.month, todo.createdAt.day);
@@ -289,12 +291,21 @@ class DashboardScreen extends StatelessWidget {
                   DateFormat('HH:mm').format(todo.createdAt),
                   style: const TextStyle(fontSize: 12),
                 ),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => TaskDetailScreen(todo: todo),
+                    ),
+                  );
+                },
               )),
             if (todayTodos.length > 3)
               Center(
                 child: TextButton(
                   onPressed: () {
-                    // Navigate to todo screen
+                    Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const AllTasksScreen()),
+                    );
                   },
                   child: const Text('View All'),
                 ),
@@ -305,7 +316,147 @@ class DashboardScreen extends StatelessWidget {
       
     );
   }
+  String _getGreeting(int hour) {
+    if (hour < 12) return 'Good Morning';
+    if (hour < 17) return 'Good Afternoon';
+    return 'Good Evening';
+  }
+}
 
+class _StopWatchWidget extends StatefulWidget {
+  @override
+  State<_StopWatchWidget> createState() => _StopWatchWidgetState();
+}
+
+class _StopWatchWidgetState extends State<_StopWatchWidget> {
+  late Stopwatch _stopwatch;
+  late Duration _elapsed;
+  late Ticker _ticker;
+  bool _isRunning = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _stopwatch = Stopwatch();
+    _elapsed = Duration.zero;
+    _ticker = Ticker(_onTick);
+  }
+
+  void _onTick(Duration _) {
+    if (_stopwatch.isRunning) {
+      setState(() {
+        _elapsed = _stopwatch.elapsed;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _ticker.dispose();
+    super.dispose();
+  }
+
+  void _start() {
+    _stopwatch.start();
+    _ticker.start();
+    setState(() {
+      _isRunning = true;
+    });
+  }
+
+  void _stop() {
+    _stopwatch.stop();
+    _ticker.stop();
+    setState(() {
+      _isRunning = false;
+    });
+  }
+
+  void _reset() {
+    _stopwatch.reset();
+    setState(() {
+      _elapsed = Duration.zero;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final hours = twoDigits(_elapsed.inHours);
+    final minutes = twoDigits(_elapsed.inMinutes.remainder(60));
+    final seconds = twoDigits(_elapsed.inSeconds.remainder(60));
+    final milliseconds = (_elapsed.inMilliseconds.remainder(1000) ~/ 10).toString().padLeft(2, '0');
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text('Stop Watch', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 16),
+        Text(
+          '$hours:$minutes:$seconds.$milliseconds',
+          style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: 2),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: _isRunning ? null : _start,
+              child: const Text('Start'),
+            ),
+            const SizedBox(width: 12),
+            ElevatedButton(
+              onPressed: _isRunning ? _stop : null,
+              child: const Text('Stop'),
+            ),
+            const SizedBox(width: 12),
+            ElevatedButton(
+              onPressed: _reset,
+              child: const Text('Reset'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class Ticker {
+  final void Function(Duration) onTick;
+  late final Stopwatch _internalStopwatch;
+  late final Duration _interval;
+  bool _isActive = false;
+
+  Ticker(this.onTick, {Duration interval = const Duration(milliseconds: 30)}) {
+    _internalStopwatch = Stopwatch();
+    _interval = interval;
+  }
+
+  void start() {
+    if (_isActive) return;
+    _isActive = true;
+    _internalStopwatch.start();
+    _tick();
+  }
+
+  void stop() {
+    _isActive = false;
+    _internalStopwatch.stop();
+  }
+
+  void dispose() {
+    _isActive = false;
+  }
+
+  void _tick() async {
+    while (_isActive) {
+      await Future.delayed(_interval);
+      if (_isActive) {
+        onTick(_internalStopwatch.elapsed);
+      }
+    }
+  }
+} 
   // Widget _buildQuickActions(BuildContext context) {
   //   return Card(
   //     elevation: 2,
@@ -478,144 +629,3 @@ class DashboardScreen extends StatelessWidget {
   //   );
   // }
 
-  String _getGreeting(int hour) {
-    if (hour < 12) return 'Good Morning';
-    if (hour < 17) return 'Good Afternoon';
-    return 'Good Evening';
-  }
-}
-
-class _StopWatchWidget extends StatefulWidget {
-  @override
-  State<_StopWatchWidget> createState() => _StopWatchWidgetState();
-}
-
-class _StopWatchWidgetState extends State<_StopWatchWidget> {
-  late Stopwatch _stopwatch;
-  late Duration _elapsed;
-  late Ticker _ticker;
-  bool _isRunning = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _stopwatch = Stopwatch();
-    _elapsed = Duration.zero;
-    _ticker = Ticker(_onTick);
-  }
-
-  void _onTick(Duration _) {
-    if (_stopwatch.isRunning) {
-      setState(() {
-        _elapsed = _stopwatch.elapsed;
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _ticker.dispose();
-    super.dispose();
-  }
-
-  void _start() {
-    _stopwatch.start();
-    _ticker.start();
-    setState(() {
-      _isRunning = true;
-    });
-  }
-
-  void _stop() {
-    _stopwatch.stop();
-    _ticker.stop();
-    setState(() {
-      _isRunning = false;
-    });
-  }
-
-  void _reset() {
-    _stopwatch.reset();
-    setState(() {
-      _elapsed = Duration.zero;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final hours = twoDigits(_elapsed.inHours);
-    final minutes = twoDigits(_elapsed.inMinutes.remainder(60));
-    final seconds = twoDigits(_elapsed.inSeconds.remainder(60));
-    final milliseconds = (_elapsed.inMilliseconds.remainder(1000) ~/ 10).toString().padLeft(2, '0');
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const Text('Stop Watch', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 16),
-        Text(
-          '$hours:$minutes:$seconds.$milliseconds',
-          style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: 2),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: _isRunning ? null : _start,
-              child: const Text('Start'),
-            ),
-            const SizedBox(width: 12),
-            ElevatedButton(
-              onPressed: _isRunning ? _stop : null,
-              child: const Text('Stop'),
-            ),
-            const SizedBox(width: 12),
-            ElevatedButton(
-              onPressed: _reset,
-              child: const Text('Reset'),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class Ticker {
-  final void Function(Duration) onTick;
-  late final Stopwatch _internalStopwatch;
-  late final Duration _interval;
-  bool _isActive = false;
-
-  Ticker(this.onTick, {Duration interval = const Duration(milliseconds: 30)}) {
-    _internalStopwatch = Stopwatch();
-    _interval = interval;
-  }
-
-  void start() {
-    if (_isActive) return;
-    _isActive = true;
-    _internalStopwatch.start();
-    _tick();
-  }
-
-  void stop() {
-    _isActive = false;
-    _internalStopwatch.stop();
-  }
-
-  void dispose() {
-    _isActive = false;
-  }
-
-  void _tick() async {
-    while (_isActive) {
-      await Future.delayed(_interval);
-      if (_isActive) {
-        onTick(_internalStopwatch.elapsed);
-      }
-    }
-  }
-} 

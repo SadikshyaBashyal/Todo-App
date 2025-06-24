@@ -161,25 +161,64 @@ class _TimelineScreenState extends State<TimelineScreen> {
         leading: const BackButton(),
         title: const Text('Timeline'),
         centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.calendar_today),
-            onPressed: _pickDate,
-          ),
-        ],
+        backgroundColor: const Color.fromARGB(255, 23, 199, 52),
       ),
       body: Column(
         children: [
           Padding(
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+            padding: const EdgeInsets.all(8),
+            child: Column(
               children: [
-                const Icon(Icons.calendar_today, color: Colors.green),
-                const SizedBox(width: 8),
-                Text(
-                  DateFormat('EEEE, MMMM d, yyyy').format(_selectedDate),
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    IconButton(
+                      icon: const Icon(Icons.chevron_left, size: 30),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.red[400],
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _selectedDate = _selectedDate.subtract(const Duration(days: 1));
+                        });
+                      },
+                    ),
+                    const SizedBox(width: 8),
+                    Center(
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          IconButton(
+                            icon: const Icon(Icons.calendar_today, color: Color.fromARGB(255, 7, 142, 11), size: 30),
+                            // style: IconButton.styleFrom(
+                            //   backgroundColor: Colors.green[400],
+                            //   foregroundColor: Colors.white,
+                            // ),
+                            onPressed: _pickDate,
+                          ),
+                          Text(
+                            DateFormat('EEEE, MMMM d, yyyy').format(_selectedDate),
+                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 7, 11, 142)),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    IconButton(
+                      icon: const Icon(Icons.chevron_right, size: 30),
+                      style: IconButton.styleFrom(
+                        backgroundColor: Colors.red[400],
+                        foregroundColor: Colors.white,
+                      ),
+                      onPressed: () {
+                        setState(() {
+                          _selectedDate = _selectedDate.add(const Duration(days: 1));
+                        });
+                      },
+                    ),
+                  ],
                 ),
               ],
             ),
