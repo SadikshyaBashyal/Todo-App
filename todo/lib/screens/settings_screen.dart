@@ -481,28 +481,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 Navigator.of(context).pop();
               },
             ),
-            RadioListTile(
-              title: const Text('DD/MM/YYYY'),
-              value: 'DD/MM/YYYY',
-              groupValue: _selectedDateFormat,
-              onChanged: (value) {
-                setState(() {
-                  _selectedDateFormat = value.toString();
-                });
-                Navigator.of(context).pop();
-              },
-            ),
-            RadioListTile(
-              title: const Text('YYYY-MM-DD'),
-              value: 'YYYY-MM-DD',
-              groupValue: _selectedDateFormat,
-              onChanged: (value) {
-                setState(() {
-                  _selectedDateFormat = value.toString();
-                });
-                Navigator.of(context).pop();
-              },
-            ),
           ],
         ),
       ),
@@ -520,28 +498,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
             RadioListTile(
               title: const Text('English'),
               value: 'English',
-              groupValue: _selectedLanguage,
-              onChanged: (value) {
-                setState(() {
-                  _selectedLanguage = value.toString();
-                });
-                Navigator.of(context).pop();
-              },
-            ),
-            RadioListTile(
-              title: const Text('Spanish'),
-              value: 'Spanish',
-              groupValue: _selectedLanguage,
-              onChanged: (value) {
-                setState(() {
-                  _selectedLanguage = value.toString();
-                });
-                Navigator.of(context).pop();
-              },
-            ),
-            RadioListTile(
-              title: const Text('French'),
-              value: 'French',
               groupValue: _selectedLanguage,
               onChanged: (value) {
                 setState(() {
