@@ -44,7 +44,7 @@ class DashboardScreen extends StatelessWidget {
                 // const SizedBox(height: 20),
                 
                 // Recent Activity
-                _buildRecentActivity(todoProvider),
+                // _buildRecentActivity(todoProvider),
               ],
             ),
           );
@@ -378,69 +378,69 @@ class DashboardScreen extends StatelessWidget {
   //   );
   // }
 
-  Widget _buildRecentActivity(TodoProvider todoProvider) {
-    final recentTodos = todoProvider.todos.take(5).toList();
+  // Widget _buildRecentActivity(TodoProvider todoProvider) {
+  //   final recentTodos = todoProvider.todos.take(5).toList();
     
-    return Card(
-      elevation: 2,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Row(
-              children: [
-                Icon(Icons.history, color: Colors.blue),
-                SizedBox(width: 8),
-                Text(
-                  'Recent Activity',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 12),
-            if (recentTodos.isEmpty)
-              const Center(
-                child: Padding(
-                  padding: EdgeInsets.all(20),
-                  child: Text(
-                    'No recent activity',
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 16,
-                    ),
-                  ),
-                ),
-              )
-            else
-              ...recentTodos.map((todo) => ListTile(
-                leading: CircleAvatar(
-                  backgroundColor: todo.isCompleted ? Colors.green : Colors.blue,
-                  child: Icon(
-                    todo.isCompleted ? Icons.check : Icons.schedule,
-                    color: Colors.white,
-                    size: 16,
-                  ),
-                ),
-                title: Text(
-                  todo.title,
-                  style: TextStyle(
-                    decoration: todo.isCompleted ? TextDecoration.lineThrough : null,
-                  ),
-                ),
-                subtitle: Text(
-                  DateFormat('MMM dd, HH:mm').format(todo.createdAt),
-                  style: const TextStyle(fontSize: 12),
-                ),
-              )),
-          ],
-        ),
-      ),
-    );
-  }
+  //   return Card(
+  //     elevation: 2,
+  //     child: Padding(
+  //       padding: const EdgeInsets.all(16),
+  //       child: Column(
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           const Row(
+  //             children: [
+  //               Icon(Icons.history, color: Colors.blue),
+  //               SizedBox(width: 8),
+  //               Text(
+  //                 'Recent Activity',
+  //                 style: TextStyle(
+  //                   fontSize: 18,
+  //                   fontWeight: FontWeight.bold,
+  //                 ),
+  //               ),
+  //             ],
+  //           ),
+  //           const SizedBox(height: 12),
+  //           if (recentTodos.isEmpty)
+  //             const Center(
+  //               child: Padding(
+  //                 padding: EdgeInsets.all(20),
+  //                 child: Text(
+  //                   'No recent activity',
+  //                   style: TextStyle(
+  //                     color: Colors.grey,
+  //                     fontSize: 16,
+  //                   ),
+  //                 ),
+  //               ),
+  //             )
+  //           else
+  //             ...recentTodos.map((todo) => ListTile(
+  //               leading: CircleAvatar(
+  //                 backgroundColor: todo.isCompleted ? Colors.green : Colors.blue,
+  //                 child: Icon(
+  //                   todo.isCompleted ? Icons.check : Icons.schedule,
+  //                   color: Colors.white,
+  //                   size: 16,
+  //                 ),
+  //               ),
+  //               title: Text(
+  //                 todo.title,
+  //                 style: TextStyle(
+  //                   decoration: todo.isCompleted ? TextDecoration.lineThrough : null,
+  //                 ),
+  //               ),
+  //               subtitle: Text(
+  //                 DateFormat('MMM dd, HH:mm').format(todo.createdAt),
+  //                 style: const TextStyle(fontSize: 12),
+  //               ),
+  //             )),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
   String _getGreeting(int hour) {
     if (hour < 12) return 'Good Morning';

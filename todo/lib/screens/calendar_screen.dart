@@ -40,22 +40,22 @@ class _CalendarScreenState extends State<CalendarScreen> {
       body: Consumer<TodoProvider>(
         builder: (context, provider, child) {
           return SingleChildScrollView(
-            child: Column(
-              children: [
-                // Calendar Header
-                _buildCalendarHeader(),
+        child: Column(
+          children: [
+            // Calendar Header
+            _buildCalendarHeader(),
 
                 // Days of the week header
-                if (_isMobileLayout) _buildDaysOfWeekHeaderMobile(),
-                if (!_isMobileLayout) _buildDaysOfWeekHeaderDesktop(),
+            if (_isMobileLayout) _buildDaysOfWeekHeaderMobile(),
+            if (!_isMobileLayout) _buildDaysOfWeekHeaderDesktop(),
 
                 // Calendar Grid
                 _buildCalendarGrid(provider),
 
-                // Events for Selected Day
+            // Events for Selected Day
                 _buildSelectedDayEvents(provider),
-              ],
-            ),
+          ],
+        ),
           );
         },
       ),
@@ -89,12 +89,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
           // Group calendar button and title
           Row(
             children: [
-              IconButton(
-                icon: const Icon(Icons.event, size: 30),
-                style: IconButton.styleFrom(
-                  backgroundColor: Colors.red[400],
-                  foregroundColor: Colors.white,
-                ),
+          IconButton(
+            icon: const Icon(Icons.event, size: 30),
+            style: IconButton.styleFrom(
+              backgroundColor: Colors.red[400],
+              foregroundColor: Colors.white,
+            ),
                 onPressed: () async {
                   final now = DateTime.now();
                   final selected = await showMonthPicker(
@@ -111,14 +111,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 },
               ),
               const SizedBox(width: 8),
-              Text(
-                DateFormat('MMMM yyyy').format(_focusedDay),
-                style: const TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
-                ),
-              ),
+          Text(
+            DateFormat('MMMM yyyy').format(_focusedDay),
+            style: const TextStyle(
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
             ],
           ),
           IconButton(
@@ -246,19 +246,19 @@ class _CalendarScreenState extends State<CalendarScreen> {
             child: Stack(
               children: [
                 Center(
-                  child: Text(
-                    day.toString(),
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight:
-                          isSelected || isToday ? FontWeight.bold : FontWeight.normal,
-                      color: isSelected
-                          ? Colors.white
-                          : isToday
-                              ? Colors.blue[700]
-                              : Colors.black87,
-                    ),
-                  ),
+              child: Text(
+                day.toString(),
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight:
+                      isSelected || isToday ? FontWeight.bold : FontWeight.normal,
+                  color: isSelected
+                      ? Colors.white
+                      : isToday
+                          ? Colors.blue[700]
+                          : Colors.black87,
+                ),
+              ),
                 ),
                 // Green dot for events
                 if (hasEvents)
@@ -324,32 +324,32 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ),
           const SizedBox(height: 12),
           events.isEmpty
-              ? const Center(
-                  child: Text(
-                    'No events for this day',
-                    style: TextStyle(
-                      color: Colors.grey,
-                      fontSize: 16,
+                ? const Center(
+                    child: Text(
+                      'No events for this day',
+                      style: TextStyle(
+                        color: Colors.grey,
+                        fontSize: 16,
+                      ),
                     ),
-                  ),
-                )
-              : ListView.builder(
+                  )
+                : ListView.builder(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: events.length,
-                  itemBuilder: (context, index) {
+                    itemBuilder: (context, index) {
                     final event = events[index];
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 8),
-                      child: ListTile(
-                        leading: CircleAvatar(
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        child: ListTile(
+                          leading: CircleAvatar(
                           backgroundColor: event.color,
-                          child: Icon(
+                            child: Icon(
                             event.icon,
-                            color: Colors.white,
-                            size: 16,
+                              color: Colors.white,
+                              size: 16,
+                            ),
                           ),
-                        ),
                         title: Text(
                           event.title,
                           style: TextStyle(
@@ -400,10 +400,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
                               onPressed: () => _showDeleteEventDialog(context, event),
                             ),
                           ],
+                          ),
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
                 ),
           // Add Delete All Completed button at the bottom
           if (completedEvents.isNotEmpty)
@@ -423,8 +423,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
                     await provider.deleteAllCompletedEventsForDay(_selectedDay);
                   },
                 ),
-              ),
-            ),
+                  ),
+          ),
         ],
       ),
     );
