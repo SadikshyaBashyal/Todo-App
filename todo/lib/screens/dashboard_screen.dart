@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/todo_provider.dart';
+import 'timeline_screen.dart';
 
 class DashboardScreen extends StatelessWidget {
   const DashboardScreen({super.key});
@@ -28,13 +29,16 @@ class DashboardScreen extends StatelessWidget {
                 _buildWelcomeCard(),
                 const SizedBox(height: 20),
                 
-                // Quick Stats
                 Padding(
                   padding: const EdgeInsets.all(5),
                   child: _buildStatsRow(todoProvider),
                 ),
                 const SizedBox(height: 20),
                 
+                // Stop Watch
+                // _stopWatch(),
+                // const SizedBox(height: 20),
+
                 // Today's Tasks
                 _buildTodayTasks(todoProvider),
                 const SizedBox(height: 20),
@@ -45,6 +49,27 @@ class DashboardScreen extends StatelessWidget {
                 
                 // Recent Activity
                 // _buildRecentActivity(todoProvider),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+                  child: SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton.icon(
+                      icon: const Icon(Icons.timeline, color: Colors.white),
+                      label: const Text('Timeline'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.green,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const TimelineScreen()),
+                        );
+                      },
+                    ),
+                  ),
+                ),
               ],
             ),
           );
@@ -188,6 +213,16 @@ class DashboardScreen extends StatelessWidget {
   //   );
   // }
 
+  // Widget _stopWatch() {
+  //   return Card(
+  //     elevation: 2,
+  //     child: Padding(
+  //       padding: const EdgeInsets.all(16),
+  //       child: _StopWatchWidget(),
+  //     ),
+  //   );
+  // }
+
   Widget _buildTodayTasks(TodoProvider todoProvider) {
     final todayTodos = todoProvider.todos.where((todo) {
       final today = DateTime.now();
@@ -267,6 +302,7 @@ class DashboardScreen extends StatelessWidget {
           ],
         ),
       ),
+      
     );
   }
 
@@ -446,5 +482,140 @@ class DashboardScreen extends StatelessWidget {
     if (hour < 12) return 'Good Morning';
     if (hour < 17) return 'Good Afternoon';
     return 'Good Evening';
+  }
+}
+
+class _StopWatchWidget extends StatefulWidget {
+  @override
+  State<_StopWatchWidget> createState() => _StopWatchWidgetState();
+}
+
+class _StopWatchWidgetState extends State<_StopWatchWidget> {
+  late Stopwatch _stopwatch;
+  late Duration _elapsed;
+  late Ticker _ticker;
+  bool _isRunning = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _stopwatch = Stopwatch();
+    _elapsed = Duration.zero;
+    _ticker = Ticker(_onTick);
+  }
+
+  void _onTick(Duration _) {
+    if (_stopwatch.isRunning) {
+      setState(() {
+        _elapsed = _stopwatch.elapsed;
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _ticker.dispose();
+    super.dispose();
+  }
+
+  void _start() {
+    _stopwatch.start();
+    _ticker.start();
+    setState(() {
+      _isRunning = true;
+    });
+  }
+
+  void _stop() {
+    _stopwatch.stop();
+    _ticker.stop();
+    setState(() {
+      _isRunning = false;
+    });
+  }
+
+  void _reset() {
+    _stopwatch.reset();
+    setState(() {
+      _elapsed = Duration.zero;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    String twoDigits(int n) => n.toString().padLeft(2, '0');
+    final hours = twoDigits(_elapsed.inHours);
+    final minutes = twoDigits(_elapsed.inMinutes.remainder(60));
+    final seconds = twoDigits(_elapsed.inSeconds.remainder(60));
+    final milliseconds = (_elapsed.inMilliseconds.remainder(1000) ~/ 10).toString().padLeft(2, '0');
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Text('Stop Watch', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+        const SizedBox(height: 16),
+        Text(
+          '$hours:$minutes:$seconds.$milliseconds',
+          style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: 2),
+        ),
+        const SizedBox(height: 16),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: _isRunning ? null : _start,
+              child: const Text('Start'),
+            ),
+            const SizedBox(width: 12),
+            ElevatedButton(
+              onPressed: _isRunning ? _stop : null,
+              child: const Text('Stop'),
+            ),
+            const SizedBox(width: 12),
+            ElevatedButton(
+              onPressed: _reset,
+              child: const Text('Reset'),
+            ),
+          ],
+        ),
+      ],
+    );
+  }
+}
+
+class Ticker {
+  final void Function(Duration) onTick;
+  late final Stopwatch _internalStopwatch;
+  late final Duration _interval;
+  bool _isActive = false;
+
+  Ticker(this.onTick, {Duration interval = const Duration(milliseconds: 30)}) {
+    _internalStopwatch = Stopwatch();
+    _interval = interval;
+  }
+
+  void start() {
+    if (_isActive) return;
+    _isActive = true;
+    _internalStopwatch.start();
+    _tick();
+  }
+
+  void stop() {
+    _isActive = false;
+    _internalStopwatch.stop();
+  }
+
+  void dispose() {
+    _isActive = false;
+  }
+
+  void _tick() async {
+    while (_isActive) {
+      await Future.delayed(_interval);
+      if (_isActive) {
+        onTick(_internalStopwatch.elapsed);
+      }
+    }
   }
 } 
