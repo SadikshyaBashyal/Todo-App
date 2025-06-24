@@ -1,7 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:provider/provider.dart';
+import '../providers/todo_provider.dart';
+// import '../models/user.dart';
 import 'signup_screen.dart';
-import '../widgets/main_navigation.dart';
+// import '../widgets/main_navigation.dart';
+import '../styles/app_styles.dart';
+import '../widgets/auth_widgets.dart';
+import '../utils/auth_utils.dart';
 
 class LichalFrontPage extends StatefulWidget {
   const LichalFrontPage({super.key});
@@ -13,7 +18,9 @@ class LichalFrontPage extends StatefulWidget {
 class _LichalFrontPageState extends State<LichalFrontPage> {
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
   bool _isLoading = false;
+  String? _error;
 
   @override
   void initState() {
@@ -21,46 +28,43 @@ class _LichalFrontPageState extends State<LichalFrontPage> {
     _checkIfUserExists();
   }
 
-  Future<void> _checkIfUserExists() async {
-    final prefs = await SharedPreferences.getInstance();
-    final hasUser = prefs.getString('username') != null;
-    if (hasUser) {
-      // User exists, show login fields
-      setState(() {});
-    }
+  void _checkIfUserExists() {
+    // Check if there are any users in the system
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final provider = Provider.of<TodoProvider>(context, listen: false);
+      if (provider.users.isEmpty) {
+        // No users exist, show signup option
+        setState(() {});
+      }
+    });
   }
 
   Future<void> _login() async {
-    if (_usernameController.text.isEmpty || _passwordController.text.isEmpty) {
-      _showSnackBar('Please fill in all fields');
-      return;
-    }
+    if (!_formKey.currentState!.validate()) return;
 
     setState(() {
       _isLoading = true;
+      _error = null;
     });
 
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final savedUsername = prefs.getString('username');
-      final savedPassword = prefs.getString('password');
+      final provider = Provider.of<TodoProvider>(context, listen: false);
+      final username = _usernameController.text.trim();
+      final password = _passwordController.text.trim();
 
-      if (savedUsername == _usernameController.text && 
-          savedPassword == _passwordController.text) {
-        // Login successful
-        await prefs.setBool('isLoggedIn', true);
-        await prefs.setInt('loginStreak', 1); // Initialize streak to 1 on first login
-        
-        if (mounted) {
-          Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (context) => const MainNavigation()),
-          );
-        }
+      final success = await AuthUtils.authenticateUser(provider, username, password);
+
+      if (success && mounted) {
+        AuthUtils.navigateToMainNavigation(context);
       } else {
-        _showSnackBar('Invalid username or password');
+        setState(() {
+          _error = 'Invalid username or password';
+        });
       }
     } catch (e) {
-      _showSnackBar('Login failed: $e');
+      setState(() {
+        _error = 'Login failed: $e';
+      });
     } finally {
       setState(() {
         _isLoading = false;
@@ -68,29 +72,20 @@ class _LichalFrontPageState extends State<LichalFrontPage> {
     }
   }
 
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message)),
-    );
-  }
+  // void _showSnackBar(String message) {
+  //   ScaffoldMessenger.of(context).showSnackBar(
+  //     SnackBar(content: Text(message)),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color.fromARGB(255, 28, 70, 238),
-              Color.fromARGB(255, 51, 135, 208),
-            ],
-          ),
-        ),
+        decoration: const BoxDecoration(gradient: AppStyles.primaryGradient),
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(AppStyles.defaultPadding),
             child: Column(
               children: [
                 const SizedBox(height: 60),
@@ -101,7 +96,7 @@ class _LichalFrontPageState extends State<LichalFrontPage> {
                   style: TextStyle(
                     fontSize: 48,
                     fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                    color: AppStyles.white,
                     letterSpacing: 8,
                   ),
                 ),
@@ -119,7 +114,7 @@ class _LichalFrontPageState extends State<LichalFrontPage> {
                   style: TextStyle(
                     fontSize: 32,
                     fontWeight: FontWeight.w600,
-                    color: Colors.white,
+                    color: AppStyles.white,
                   ),
                 ),
                 
@@ -160,7 +155,7 @@ class _LichalFrontPageState extends State<LichalFrontPage> {
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: AppStyles.white,
                 borderRadius: BorderRadius.circular(20),
               ),
               child: Center(
@@ -169,7 +164,7 @@ class _LichalFrontPageState extends State<LichalFrontPage> {
                   style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: Color.fromARGB(255, 28, 70, 238),
+                    color: AppStyles.primaryBlue,
                   ),
                 ),
               ),
@@ -180,7 +175,7 @@ class _LichalFrontPageState extends State<LichalFrontPage> {
               style: const TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.w500,
-                color: Colors.white,
+                color: AppStyles.white,
               ),
             ),
           ],
@@ -190,86 +185,42 @@ class _LichalFrontPageState extends State<LichalFrontPage> {
   }
 
   Widget _buildLoginForm() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
-      ),
-      child: Column(
-        children: [
-          TextField(
-            controller: _usernameController,
-            style: const TextStyle(color: Colors.white),
-            decoration: InputDecoration(
+    return AuthWidgets.transparentContainer(
+      child: Form(
+        key: _formKey,
+        child: Column(
+          children: [
+            AuthWidgets.styledTextFormField(
+              controller: _usernameController,
               labelText: 'Username',
-              labelStyle: const TextStyle(color: Colors.white70),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Colors.white),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Colors.white),
-              ),
+              prefixIcon: Icons.person,
+              validator: AuthUtils.validateUsername,
             ),
-          ),
-          
-          const SizedBox(height: 20),
-          
-          TextField(
-            controller: _passwordController,
-            obscureText: true,
-            style: const TextStyle(color: Colors.white),
-            decoration: InputDecoration(
+            
+            AuthWidgets.defaultSpacing,
+            
+            AuthWidgets.styledTextFormField(
+              controller: _passwordController,
               labelText: 'Password',
-              labelStyle: const TextStyle(color: Colors.white70),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Colors.white),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Colors.white),
-              ),
+              prefixIcon: Icons.lock,
+              obscureText: true,
+              validator: AuthUtils.validatePassword,
             ),
-          ),
-          
-          const SizedBox(height: 20),
-          
-          SizedBox(
-            width: double.infinity,
-            height: 50,
-            child: ElevatedButton(
-              onPressed: _isLoading ? null : _login,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                foregroundColor: const Color.fromARGB(255, 28, 70, 238),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(10),
-                ),
-              ),
-              child: _isLoading
-                  ? const CircularProgressIndicator()
-                  : const Text(
-                      'Login',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+            
+            if (_error != null) ...[
+              const SizedBox(height: 12),
+              Text(_error!, style: const TextStyle(color: Colors.red)),
+            ],
+            
+            AuthWidgets.defaultSpacing,
+            
+            AuthWidgets.loadingButton(
+              onPressed: _login,
+              text: 'Login',
+              isLoading: _isLoading,
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -284,7 +235,7 @@ class _LichalFrontPageState extends State<LichalFrontPage> {
       child: const Text(
         'Don\'t have an account? Sign Up',
         style: TextStyle(
-          color: Colors.white,
+          color: AppStyles.white,
           fontSize: 16,
           decoration: TextDecoration.underline,
         ),

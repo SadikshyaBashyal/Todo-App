@@ -93,17 +93,17 @@ class EditTodoDialogState extends State<EditTodoDialog> {
                         controller: _titleController,
                         label: 'Task Title *',
                         hint: 'Enter task title',
-                        validator: (value) {
-                          if (value == null || value.trim().isEmpty) {
+              validator: (value) {
+                if (value == null || value.trim().isEmpty) {
                             return 'Please enter a title';
-                          }
-                          return null;
-                        },
-                      ),
-                      const SizedBox(height: 16),
+                }
+                return null;
+              },
+            ),
+            const SizedBox(height: 16),
                       // Description
                       _buildTextField(
-                        controller: _descriptionController,
+              controller: _descriptionController,
                         label: 'Description (Optional)',
                         hint: 'Enter task description',
                         maxLines: 3,

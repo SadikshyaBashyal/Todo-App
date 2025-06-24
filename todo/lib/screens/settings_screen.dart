@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
-// import 'dart:io';
-// import 'dart:typed_data';
-// import 'dart:convert';
-// import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:provider/provider.dart';
+import '../providers/todo_provider.dart';
+import '../models/user.dart';
 import 'lichal_front_page.dart';
 import '../helpers/image_helper.dart';
+import '../styles/app_styles.dart';
 // import 'package:intl/intl.dart';
 
 class SettingsScreen extends StatefulWidget {
@@ -23,30 +22,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _selectedDateFormat = 'MM/DD/YYYY';
   String _selectedLanguage = 'English';
   
-  String _userName = 'User';
-  String _userPhotoPath = '';
-  int _loginStreak = 0;
-  String _userEmail = 'user@daycare.com';
-
   @override
   void initState() {
     super.initState();
-    _loadUserData();
-  }
-
-  Future<void> _loadUserData() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _userName = prefs.getString('name') ?? 'User';
-      _userPhotoPath = prefs.getString('photoPath') ?? '';
-      _loginStreak = prefs.getInt('loginStreak') ?? 0;
-      _userEmail = prefs.getString('username') ?? 'user@daycare.com';
-    });
   }
 
   Future<void> _logout() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool('isLoggedIn', false);
+    final provider = Provider.of<TodoProvider>(context, listen: false);
+    await provider.logout();
     
     if (mounted) {
       Navigator.of(context).pushAndRemoveUntil(
@@ -69,30 +52,39 @@ class _SettingsScreenState extends State<SettingsScreen> {
       //     ],
       //   ),
       // ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Profile Section
-            _buildProfileSection(),
-            
-            // Date & Time Settings
-            _buildDateTimeSettings(),
-            
-            // App Preferences
-            _buildAppPreferences(),
-            
-            // Data & Backup
-            _buildDataBackup(),
-            
-            // About & Support
-            _buildAboutSupport(),
-          ],
-        ),
+      body: Consumer<TodoProvider>(
+        builder: (context, provider, child) {
+          final currentUser = provider.users.firstWhere(
+            (user) => user.username == provider.currentUsername,
+            orElse: () => AppUser(username: 'unknown', password: '', name: 'Unknown User'),
+          );
+
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                // Profile Section
+                _buildProfileSection(currentUser, provider),
+                
+                // Date & Time Settings
+                _buildDateTimeSettings(),
+                
+                // App Preferences
+                _buildAppPreferences(),
+                
+                // Data & Backup
+                _buildDataBackup(),
+                
+                // About & Support
+                _buildAboutSupport(),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
 
-  Widget _buildProfileSection() {
+  Widget _buildProfileSection(AppUser user, TodoProvider provider) {
     return Card(
       margin: const EdgeInsets.all(20),
       child: Padding(
@@ -101,21 +93,21 @@ class _SettingsScreenState extends State<SettingsScreen> {
           children: [
             CircleAvatar(
               radius: 40,
-              backgroundColor: Colors.blue,
+              backgroundColor: AppStyles.primaryBlue,
               child: ClipOval(
-                child: _buildProfileImage(),
+                child: _buildProfileImage(user),
               ),
             ),
             const SizedBox(height: 12),
             Text(
-              _userName,
+              user.name,
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
               ),
             ),
             Text(
-              _userEmail,
+              user.username,
               style: TextStyle(
                 color: Colors.grey[600],
                 fontSize: 14,
@@ -125,9 +117,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
-                _buildProfileStat('Tasks', '24'),
-                _buildProfileStat('Completed', '18'),
-                _buildProfileStat('Streak', '$_loginStreak days'),
+                _buildProfileStat('Tasks', '${provider.todos.length}'),
+                _buildProfileStat('Completed', '${provider.todos.where((todo) => todo.isCompleted).length}'),
+                _buildProfileStat('Pending', '${provider.todos.where((todo) => !todo.isCompleted).length}'),
               ],
             ),
             const SizedBox(height: 20),
@@ -149,9 +141,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildProfileImage() {
+  Widget _buildProfileImage(AppUser user) {
     return ImageHelper.buildImageWidget(
-      _userPhotoPath,
+      user.photoPath ?? '',
       width: 80,
       height: 80,
       fit: BoxFit.cover,
@@ -171,7 +163,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
           style: const TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.blue,
+            color: AppStyles.primaryBlue,
           ),
         ),
         Text(

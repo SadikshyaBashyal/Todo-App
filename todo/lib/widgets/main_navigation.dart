@@ -74,7 +74,7 @@ class _MainNavigationState extends State<MainNavigation> {
             ),
           ],
         ),
-        backgroundColor: const Color.fromARGB(255, 85, 223, 108),
+        backgroundColor: const Color.fromARGB(255, 23, 199, 52),
         elevation: 2,
         actions: [
           // Time Display

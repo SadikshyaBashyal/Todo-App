@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'screens/lichal_front_page.dart';
 import 'widgets/main_navigation.dart';
 import 'providers/todo_provider.dart';
+import 'styles/app_styles.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -26,21 +26,21 @@ class MyApp extends StatelessWidget {
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           primarySwatch: Colors.green,
-          primaryColor: Colors.blue[600],
+          primaryColor: AppStyles.primaryBlue,
           scaffoldBackgroundColor: Colors.grey[50],
-          appBarTheme: AppBarTheme(
-            backgroundColor: Colors.green[600],
+          appBarTheme: const AppBarTheme(
+            backgroundColor: AppStyles.primaryBlue,
             elevation: 0,
             centerTitle: true,
-            titleTextStyle: const TextStyle(
-              color: Colors.white,
+            titleTextStyle: TextStyle(
+              color: AppStyles.white,
               fontSize: 20,
               fontWeight: FontWeight.w600,
             ),
           ),
-          floatingActionButtonTheme: FloatingActionButtonThemeData(
-            backgroundColor: Colors.blue[600],
-            foregroundColor: Colors.white,
+          floatingActionButtonTheme: const FloatingActionButtonThemeData(
+            backgroundColor: AppStyles.primaryBlue,
+            foregroundColor: AppStyles.white,
           ),
           cardTheme: CardThemeData(
             elevation: 2,
@@ -63,21 +63,18 @@ class AuthWrapper extends StatefulWidget {
 }
 
 class _AuthWrapperState extends State<AuthWrapper> {
-  bool _isLoggedIn = false;
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _checkLoginStatus();
+    _checkAuthStatus();
   }
 
-  Future<void> _checkLoginStatus() async {
-    final prefs = await SharedPreferences.getInstance();
-    final isLoggedIn = prefs.getBool('isLoggedIn') ?? false;
-    
+  Future<void> _checkAuthStatus() async {
+    // Give the TodoProvider time to load users
+    await Future.delayed(const Duration(milliseconds: 100));
     setState(() {
-      _isLoggedIn = isLoggedIn;
       _isLoading = false;
     });
   }
@@ -92,6 +89,15 @@ class _AuthWrapperState extends State<AuthWrapper> {
       );
     }
 
-    return _isLoggedIn ? const MainNavigation() : const LichalFrontPage();
+    return Consumer<TodoProvider>(
+      builder: (context, provider, child) {
+        // If there's a current user, show MainNavigation
+        if (provider.currentUsername != null) {
+          return const MainNavigation();
+        }
+        // Otherwise, show LichalFrontPage for authentication
+        return const LichalFrontPage();
+      },
+    );
   }
 } 

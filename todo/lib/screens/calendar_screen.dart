@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
+import 'package:month_picker_dialog/month_picker_dialog.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -56,7 +57,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   Widget _buildCalendarHeader() {
-    // ... (no changes in this method)
     return Container(
       padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
@@ -80,13 +80,40 @@ class _CalendarScreenState extends State<CalendarScreen> {
               });
             },
           ),
-          Text(
-            DateFormat('MMMM yyyy').format(_focusedDay),
-            style: const TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
+          // Group calendar button and title
+          Row(
+            children: [
+              IconButton(
+                icon: const Icon(Icons.event, size: 30),
+                style: IconButton.styleFrom(
+                  backgroundColor: Colors.red[400],
+                  foregroundColor: Colors.white,
+                ),
+                onPressed: () async {
+                  final now = DateTime.now();
+                  final selected = await showMonthPicker(
+                    context: context,
+                    initialDate: _focusedDay,
+                    firstDate: DateTime(now.year - 5, 1),
+                    lastDate: DateTime(now.year + 5, 12),
+                  );
+                  if (selected != null) {
+                    setState(() {
+                      _focusedDay = DateTime(selected.year, selected.month, 1);
+                    });
+                  }
+                },
+              ),
+              const SizedBox(width: 8),
+              Text(
+                DateFormat('MMMM yyyy').format(_focusedDay),
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ],
           ),
           IconButton(
             icon: const Icon(Icons.chevron_right, size: 30),

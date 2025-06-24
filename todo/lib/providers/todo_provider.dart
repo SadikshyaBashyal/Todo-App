@@ -106,10 +106,23 @@ class TodoProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> logout() async {
+    final prefs = await SharedPreferences.getInstance();
+    _currentUsername = null;
+    _todos = [];
+    _availableTags = ['daily', 'work', 'personal'];
+    await prefs.remove('currentUser');
+    notifyListeners();
+  }
+
   Future<void> addUser(AppUser user) async {
     _users.add(user);
     await _saveUsers();
     notifyListeners();
+  }
+
+  Future<void> refreshUsers() async {
+    await _loadUsers();
   }
 
   // LOCAL: Store todos as a map from username to list of todos

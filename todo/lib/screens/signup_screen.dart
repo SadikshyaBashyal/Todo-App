@@ -8,8 +8,13 @@ import 'dart:typed_data';
 import '../helpers/image_helper.dart';
 import 'package:provider/provider.dart';
 import '../providers/todo_provider.dart';
-import '../models/user.dart';
-import 'home_screen.dart';
+// import '../models/user.dart';
+// import 'home_screen.dart';
+// import 'lichal_front_page.dart';
+// import '../widgets/lichal_front_page.dart';
+import '../styles/app_styles.dart';
+import '../widgets/auth_widgets.dart';
+import '../utils/auth_utils.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({super.key});
@@ -139,33 +144,34 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Future<void> _signup() async {
+    if (!_formKey.currentState!.validate()) return;
+    
     setState(() { _isLoading = true; });
+    
     final provider = Provider.of<TodoProvider>(context, listen: false);
     final username = _usernameController.text.trim();
     final password = _passwordController.text.trim();
     final name = _nameController.text.trim();
+    
     // Check for duplicate username
-    if (provider.users.any((u) => u.username == username)) {
-      setState(() {
-        _isLoading = false;
-      });
+    if (AuthUtils.isUsernameTaken(provider, username)) {
+      _showSnackBar('Username already exists. Please choose a different one.');
+      setState(() { _isLoading = false; });
       return;
     }
-    final user = AppUser(
-      username: username,
-      password: password,
-      name: name,
-      photoPath: null, // Add photo logic if needed
-    );
-    await provider.addUser(user);
-    await provider.setCurrentUser(username);
-    if (mounted) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const HomeScreen()),
-        (route) => false,
-      );
+    
+    try {
+      await AuthUtils.createUser(provider, username, password, name);
+      
+      if (mounted) {
+        // Navigate directly to MainNavigation after successful signup
+        AuthUtils.navigateToMainNavigation(context);
+      }
+    } catch (e) {
+      _showSnackBar('Signup failed: $e');
+    } finally {
+      setState(() { _isLoading = false; });
     }
-    setState(() { _isLoading = false; });
   }
 
   void _showSnackBar(String message) {
@@ -179,23 +185,14 @@ class _SignupScreenState extends State<SignupScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Sign Up'),
-        backgroundColor: const Color.fromARGB(255, 28, 70, 238),
-        foregroundColor: Colors.white,
+        backgroundColor: AppStyles.primaryBlue,
+        foregroundColor: AppStyles.white,
       ),
       body: Container(
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              Color.fromARGB(255, 28, 70, 238),
-              Color.fromARGB(255, 51, 135, 208),
-            ],
-          ),
-        ),
+        decoration: const BoxDecoration(gradient: AppStyles.primaryGradient),
         child: SafeArea(
           child: SingleChildScrollView(
-            padding: const EdgeInsets.all(20),
+            padding: const EdgeInsets.all(AppStyles.defaultPadding),
             child: Form(
               key: _formKey,
               child: Column(
@@ -213,7 +210,11 @@ class _SignupScreenState extends State<SignupScreen> {
                   const SizedBox(height: 30),
                   
                   // Sign Up Button
-                  _buildSignUpButton(),
+                  AuthWidgets.loadingButton(
+                    onPressed: _signup,
+                    text: 'Sign Up',
+                    isLoading: _isLoading,
+                  ),
                 ],
               ),
             ),
@@ -232,10 +233,10 @@ class _SignupScreenState extends State<SignupScreen> {
             width: 120,
             height: 120,
             decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.1),
+              color: AppStyles.white.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(60),
               border: Border.all(
-                color: Colors.white.withValues(alpha: 0.3),
+                color: AppStyles.white.withValues(alpha: 0.3),
                 width: 2,
               ),
             ),
@@ -245,10 +246,7 @@ class _SignupScreenState extends State<SignupScreen> {
         const SizedBox(height: 10),
         Text(
           _getPhotoStatusText(),
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 16,
-          ),
+          style: AppStyles.bodyStyle,
         ),
       ],
     );
@@ -284,7 +282,7 @@ class _SignupScreenState extends State<SignupScreen> {
     return const Icon(
       Icons.add_a_photo,
       size: 50,
-      color: Colors.white,
+      color: AppStyles.white,
     );
   }
 
@@ -297,173 +295,48 @@ class _SignupScreenState extends State<SignupScreen> {
   }
 
   Widget _buildFormFields() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(15),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.3)),
-      ),
+    return AuthWidgets.transparentContainer(
       child: Column(
         children: [
-          TextFormField(
+          AuthWidgets.styledTextFormField(
             controller: _nameController,
-            style: const TextStyle(color: Colors.white),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter your name';
-              }
-              return null;
-            },
-            decoration: InputDecoration(
-              labelText: 'Full Name',
-              labelStyle: const TextStyle(color: Colors.white70),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Colors.white),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Colors.white),
-              ),
-            ),
+            labelText: 'Full Name',
+            validator: AuthUtils.validateName,
           ),
           
-          const SizedBox(height: 20),
+          AuthWidgets.defaultSpacing,
           
-          TextFormField(
+          AuthWidgets.styledTextFormField(
             controller: _usernameController,
-            style: const TextStyle(color: Colors.white),
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter a username';
-              }
-              if (value.length < 3) {
-                return 'Username must be at least 3 characters';
-              }
-              return null;
-            },
-            decoration: InputDecoration(
-              labelText: 'Username',
-              labelStyle: const TextStyle(color: Colors.white70),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Colors.white),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Colors.white),
-              ),
-            ),
+            labelText: 'Username',
+            validator: AuthUtils.validateUsername,
           ),
           
-          const SizedBox(height: 20),
+          AuthWidgets.defaultSpacing,
           
-          TextFormField(
+          AuthWidgets.styledTextFormField(
             controller: _passwordController,
+            labelText: '4-Digit Password',
             obscureText: true,
-            style: const TextStyle(color: Colors.white),
             keyboardType: TextInputType.number,
             maxLength: 4,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please enter a password';
-              }
-              if (value.length != 4) {
-                return 'Password must be exactly 4 digits';
-              }
-              if (!RegExp(r'^\d{4}$').hasMatch(value)) {
-                return 'Password must contain only digits';
-              }
-              return null;
-            },
-            decoration: InputDecoration(
-              labelText: '4-Digit Password',
-              labelStyle: const TextStyle(color: Colors.white70),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Colors.white),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Colors.white),
-              ),
-            ),
+            validator: AuthUtils.validatePassword,
           ),
           
-          const SizedBox(height: 20),
+          AuthWidgets.defaultSpacing,
           
-          TextFormField(
+          AuthWidgets.styledTextFormField(
             controller: _confirmPasswordController,
+            labelText: 'Confirm Password',
             obscureText: true,
-            style: const TextStyle(color: Colors.white),
             keyboardType: TextInputType.number,
             maxLength: 4,
-            validator: (value) {
-              if (value == null || value.isEmpty) {
-                return 'Please confirm your password';
-              }
-              if (value != _passwordController.text) {
-                return 'Passwords do not match';
-              }
-              return null;
-            },
-            decoration: InputDecoration(
-              labelText: 'Confirm Password',
-              labelStyle: const TextStyle(color: Colors.white70),
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Colors.white),
-              ),
-              enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.5)),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: const BorderSide(color: Colors.white),
-              ),
+            validator: (value) => AuthUtils.validateConfirmPassword(
+              value, 
+              _passwordController.text,
             ),
           ),
         ],
-      ),
-    );
-  }
-
-  Widget _buildSignUpButton() {
-    return SizedBox(
-      width: double.infinity,
-      height: 50,
-      child: ElevatedButton(
-        onPressed: _isLoading ? null : _signup,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.white,
-          foregroundColor: const Color.fromARGB(255, 28, 70, 238),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(10),
-          ),
-        ),
-        child: _isLoading
-            ? const CircularProgressIndicator()
-            : const Text(
-                'Sign Up',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
       ),
     );
   }

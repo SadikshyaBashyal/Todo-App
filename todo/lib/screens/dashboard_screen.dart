@@ -179,6 +179,15 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
+  // Widget _buildTodaysTimeline(TodoProvider todoProvider) {
+  //   return Card(
+  //     elevation: 2,
+  //     child: Padding(
+  //       padding: const EdgeInsets.all(16),
+  //     ),
+  //   );
+  // }
+
   Widget _buildTodayTasks(TodoProvider todoProvider) {
     final todayTodos = todoProvider.todos.where((todo) {
       final today = DateTime.now();
