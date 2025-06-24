@@ -669,9 +669,10 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
                         _routines.add(routineData);
                       }
                     });
+                    final navigator = Navigator.of(context);
                     await _saveRoutines();
                     if (mounted) {
-                      Navigator.of(context).pop();
+                      navigator.pop();
                     }
                   },
                   child: Text(isEdit ? 'Update' : 'Add'),
