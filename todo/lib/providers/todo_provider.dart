@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../models/todo.dart';
 import '../models/user.dart';
+import '../models/event.dart';
 //  import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -18,6 +19,9 @@ class TodoProvider with ChangeNotifier {
   String? _currentUsername;
   List<AppUser> _users = [];
 
+  // Calendar events support
+  List<CalendarEvent> _events = [];
+
   // For Firebase (commented out)
   // final FirebaseAuth _auth = FirebaseAuth.instance;
   // final FirebaseFirestore _firestore = FirebaseFirestore.instance;
@@ -29,6 +33,7 @@ class TodoProvider with ChangeNotifier {
   Priority? get selectedPriority => _selectedPriority;
   String? get currentUsername => _currentUsername;
   List<AppUser> get users => _users;
+  List<CalendarEvent> get events => _events;
 
   List<Todo> get filteredTodos {
     List<Todo> filtered = _todos;
@@ -93,6 +98,7 @@ class TodoProvider with ChangeNotifier {
     if (_currentUsername != null) {
       await _loadTodos();
       await _loadTags();
+      await _loadEvents();
     }
     notifyListeners();
   }
@@ -103,6 +109,7 @@ class TodoProvider with ChangeNotifier {
     await prefs.setString('currentUser', username);
     await _loadTodos();
     await _loadTags();
+    await _loadEvents();
     notifyListeners();
   }
 
@@ -111,6 +118,7 @@ class TodoProvider with ChangeNotifier {
     _currentUsername = null;
     _todos = [];
     _availableTags = ['daily', 'work', 'personal'];
+    _events = [];
     await prefs.remove('currentUser');
     notifyListeners();
   }
@@ -153,6 +161,80 @@ class TodoProvider with ChangeNotifier {
     if (_currentUsername == null) return;
     final prefs = await SharedPreferences.getInstance();
     await prefs.setStringList('tags_${_currentUsername!}', _availableTags);
+  }
+
+  // LOCAL: Store events per user
+  Future<void> _loadEvents() async {
+    if (_currentUsername == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    final eventsJson = prefs.getStringList('events_${_currentUsername!}') ?? [];
+    _events = eventsJson.map((json) => CalendarEvent.fromJson(jsonDecode(json))).toList();
+    notifyListeners();
+  }
+
+  Future<void> _saveEvents() async {
+    if (_currentUsername == null) return;
+    final prefs = await SharedPreferences.getInstance();
+    final eventsJson = _events.map((event) => jsonEncode(event.toJson())).toList();
+    await prefs.setStringList('events_${_currentUsername!}', eventsJson);
+  }
+
+  // Event management methods
+  Future<void> addEvent(CalendarEvent event) async {
+    _events.add(event);
+    await _saveEvents();
+    notifyListeners();
+  }
+
+  Future<void> updateEvent(CalendarEvent event) async {
+    final index = _events.indexWhere((e) => e.id == event.id);
+    if (index != -1) {
+      _events[index] = event;
+      await _saveEvents();
+      notifyListeners();
+    }
+  }
+
+  Future<void> deleteEvent(String eventId) async {
+    _events.removeWhere((event) => event.id == eventId);
+    await _saveEvents();
+    notifyListeners();
+  }
+
+  Future<void> toggleEventCompletion(String eventId) async {
+    final index = _events.indexWhere((event) => event.id == eventId);
+    if (index != -1) {
+      final event = _events[index];
+      final updatedEvent = event.copyWith(
+        isCompleted: !event.isCompleted,
+        completedAt: !event.isCompleted ? DateTime.now() : null,
+      );
+      _events[index] = updatedEvent;
+      await _saveEvents();
+      notifyListeners();
+    }
+  }
+
+  List<CalendarEvent> getEventsForDay(DateTime date) {
+    return _events.where((event) =>
+      event.isDueOn(date) ||
+      (event.isCompleted && event.isDueOn(date, ignoreCompleted: true))
+    ).toList();
+  }
+
+  // bool _isSameDay(DateTime a, DateTime b) =>
+  //     a.year == b.year && a.month == b.month && a.day == b.day;
+
+  bool hasEventsOnDay(DateTime date) {
+    return _events.any((event) => event.isDueOn(date));
+  }
+
+  List<CalendarEvent> getCompletedEvents() {
+    return _events.where((event) => event.isCompleted).toList();
+  }
+
+  List<CalendarEvent> getPendingEvents() {
+    return _events.where((event) => !event.isCompleted).toList();
   }
 
   // --- Firebase logic (commented out) ---
@@ -298,4 +380,18 @@ class TodoProvider with ChangeNotifier {
     await _saveTodos();
     notifyListeners();
   }
-}
+
+  Future<void> deleteAllCompletedEventsForDay(DateTime date) async {
+    _events.removeWhere((event) =>
+      event.isCompleted &&
+      (
+        // For non-recurring, match the original date
+        (event.recurringType == EventRecurringType.none && event.date.year == date.year && event.date.month == date.month && event.date.day == date.day)
+        // For recurring, match if the event would have appeared on this day
+        || (event.recurringType != EventRecurringType.none && event.isDueOn(date, ignoreCompleted: true))
+      )
+    );
+    await _saveEvents();
+    notifyListeners();
+  }
+} 

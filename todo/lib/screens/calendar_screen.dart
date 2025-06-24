@@ -3,6 +3,10 @@ import 'package:intl/intl.dart';
 import 'dart:io' show Platform;
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:month_picker_dialog/month_picker_dialog.dart';
+import 'package:provider/provider.dart';
+import '../providers/todo_provider.dart';
+import '../models/event.dart';
+import '../widgets/event_dialog.dart';
 
 class CalendarScreen extends StatefulWidget {
   const CalendarScreen({super.key});
@@ -22,9 +26,8 @@ class _CalendarScreenState extends State<CalendarScreen> {
     _selectedDay = DateTime.now();
   }
 
-  // NEW: Helper function to determine the layout type
+  // Helper function to determine the layout type
   bool get _isMobileLayout {
-    // This logic mirrors the crossAxisCount check in the grid
     if (kIsWeb || (Platform.isWindows || Platform.isLinux || Platform.isMacOS)) {
       return false; // Desktop/Web layout
     }
@@ -34,24 +37,27 @@ class _CalendarScreenState extends State<CalendarScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // appBar: AppBar( ... ),
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            // Calendar Header
-            _buildCalendarHeader(),
+      body: Consumer<TodoProvider>(
+        builder: (context, provider, child) {
+          return SingleChildScrollView(
+            child: Column(
+              children: [
+                // Calendar Header
+                _buildCalendarHeader(),
 
-            // NEW: Days of the week header, only for mobile layout
-            if (_isMobileLayout) _buildDaysOfWeekHeaderMobile(),
-            if (!_isMobileLayout) _buildDaysOfWeekHeaderDesktop(),
+                // Days of the week header
+                if (_isMobileLayout) _buildDaysOfWeekHeaderMobile(),
+                if (!_isMobileLayout) _buildDaysOfWeekHeaderDesktop(),
 
-            // Calendar Grid - Let it size naturally
-            _buildCalendarGrid(),
+                // Calendar Grid
+                _buildCalendarGrid(provider),
 
-            // Events for Selected Day
-            _buildSelectedDayEvents(),
-          ],
-        ),
+                // Events for Selected Day
+                _buildSelectedDayEvents(provider),
+              ],
+            ),
+          );
+        },
       ),
     );
   }
@@ -133,7 +139,6 @@ class _CalendarScreenState extends State<CalendarScreen> {
   }
 
   Widget _buildDaysOfWeekHeaderDesktop() {
-    // Using the abbreviations you requested
     final daysOfWeek = ['M', 'T', 'W', 'Th', 'F', 'St', 'S', 'M', 'T', 'W', 'Th', 'F', 'St', 'S'];
 
     return Padding(
@@ -158,16 +163,12 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
   
-  // NEW: Widget to build the days of the week header (e.g., M, T, W...)
   Widget _buildDaysOfWeekHeaderMobile() {
-    // Using the abbreviations you requested
     final daysOfWeek = ['M', 'T', 'W', 'Th', 'F', 'St', 'S'];
 
     return Padding(
-      // Padding to align with the calendar grid's horizontal padding
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       child: Row(
-        // Use map to create a Text widget for each day and Expanded to space them evenly
         children: daysOfWeek
             .map(
               (day) => Expanded(
@@ -187,14 +188,10 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  Widget _buildCalendarGrid() {
+  Widget _buildCalendarGrid(TodoProvider provider) {
     final daysInMonth = DateTime(_focusedDay.year, _focusedDay.month + 1, 0).day;
     final firstDayOfMonth = DateTime(_focusedDay.year, _focusedDay.month, 1);
-    
-    // In Dart, weekday is 1 for Monday and 7 for Sunday.
     final firstWeekday = firstDayOfMonth.weekday;
-
-    // Determine cross axis count based on platform
     int crossAxisCount = _isMobileLayout ? 7 : 14;
 
     return GridView.count(
@@ -206,12 +203,16 @@ class _CalendarScreenState extends State<CalendarScreen> {
       crossAxisSpacing: 10,
       mainAxisSpacing: 10,
       children: List.generate(_isMobileLayout ? 42 : 56, (index) {
-        // This logic correctly places the first day based on a Monday start
         final dayOffset = index - (firstWeekday - 1);
         final day = dayOffset + 1;
 
         if (dayOffset < 0 || day > daysInMonth) {
-          return Container(); // Empty space for days outside the current month
+          return Container(
+            decoration: BoxDecoration(
+              color: Colors.transparent,
+              borderRadius: BorderRadius.circular(4),
+            ),
+          ); // Empty space for days outside the current month
         }
 
         final date = DateTime(_focusedDay.year, _focusedDay.month, day);
@@ -221,6 +222,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
         final isToday = date.year == DateTime.now().year &&
             date.month == DateTime.now().month &&
             date.day == DateTime.now().day;
+        final hasEvents = provider.hasEventsOnDay(date);
 
         return GestureDetector(
           onTap: () {
@@ -241,20 +243,38 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 width: isToday ? 1.5 : 0.5,
               ),
             ),
-            child: Center(
-              child: Text(
-                day.toString(),
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight:
-                      isSelected || isToday ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected
-                      ? Colors.white
-                      : isToday
-                          ? Colors.blue[700]
-                          : Colors.black87,
+            child: Stack(
+              children: [
+                Center(
+                  child: Text(
+                    day.toString(),
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight:
+                          isSelected || isToday ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected
+                          ? Colors.white
+                          : isToday
+                              ? Colors.blue[700]
+                              : Colors.black87,
+                    ),
+                  ),
                 ),
-              ),
+                // Green dot for events
+                if (hasEvents)
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Colors.green,
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
             ),
           ),
         );
@@ -262,10 +282,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
     );
   }
 
-  Widget _buildSelectedDayEvents() {
-    // ... (no changes in this method)
+  Widget _buildSelectedDayEvents(TodoProvider provider) {
+    final events = provider.getEventsForDay(_selectedDay);
+    final completedEvents = events.where((e) => e.isCompleted).toList();
+    
     return Container(
-      height: 500,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.grey[200],
@@ -289,9 +310,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
               ),
               const Spacer(),
               TextButton(
-                onPressed: () {
-                  _showAddEventDialog(context);
-                },
+                onPressed: () => _showAddEventDialog(context),
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
@@ -304,112 +323,150 @@ class _CalendarScreenState extends State<CalendarScreen> {
             ],
           ),
           const SizedBox(height: 12),
-          Expanded(
-            child: _getEventsForDay(_selectedDay).isEmpty
-                ? const Center(
-                    child: Text(
-                      'No events for this day',
-                      style: TextStyle(
-                        color: Colors.grey,
-                        fontSize: 16,
-                      ),
+          events.isEmpty
+              ? const Center(
+                  child: Text(
+                    'No events for this day',
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 16,
                     ),
-                  )
-                : ListView.builder(
-                    itemCount: _getEventsForDay(_selectedDay).length,
-                    itemBuilder: (context, index) {
-                      final event = _getEventsForDay(_selectedDay)[index];
-                      return Card(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        child: ListTile(
-                          leading: CircleAvatar(
-                            backgroundColor: event['color'] as Color,
-                            child: Icon(
-                              event['icon'] as IconData,
-                              color: Colors.white,
-                              size: 16,
-                            ),
-                          ),
-                          title: Text(event['title'] as String),
-                          subtitle: Text(event['time'] as String),
-                          trailing: IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () {
-                              // Delete event
-                            },
+                  ),
+                )
+              : ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: events.length,
+                  itemBuilder: (context, index) {
+                    final event = events[index];
+                    return Card(
+                      margin: const EdgeInsets.only(bottom: 8),
+                      child: ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: event.color,
+                          child: Icon(
+                            event.icon,
+                            color: Colors.white,
+                            size: 16,
                           ),
                         ),
-                      );
-                    },
+                        title: Text(
+                          event.title,
+                          style: TextStyle(
+                            decoration: event.isCompleted 
+                                ? TextDecoration.lineThrough 
+                                : null,
+                          ),
+                        ),
+                        subtitle: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            if (event.description.isNotEmpty)
+                              Text(event.description),
+                            Text(event.timeString),
+                            if (event.recurringType != EventRecurringType.none)
+                              Text(
+                                event.recurringString,
+                                style: TextStyle(
+                                  color: Colors.grey[600],
+                                  fontSize: 12,
+                                ),
+                              ),
+                          ],
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            // Check button (only toggles completion)
+                            IconButton(
+                              icon: Icon(
+                                event.isCompleted 
+                                    ? Icons.check_circle 
+                                    : Icons.check_circle_outline,
+                                color: event.isCompleted ? Colors.green : Colors.grey,
+                              ),
+                              onPressed: () {
+                                provider.toggleEventCompletion(event.id);
+                              },
+                            ),
+                            // Edit button
+                            IconButton(
+                              icon: const Icon(Icons.edit, color: Colors.blue),
+                              onPressed: () => _showEditEventDialog(context, event),
+                            ),
+                            // Delete button
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () => _showDeleteEventDialog(context, event),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+          // Add Delete All Completed button at the bottom
+          if (completedEvents.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 12.0),
+              child: SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  icon: const Icon(Icons.delete_sweep, color: Colors.white),
+                  label: const Text('Delete All Completed'),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.red,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 14),
                   ),
-          ),
+                  onPressed: () async {
+                    await provider.deleteAllCompletedEventsForDay(_selectedDay);
+                  },
+                ),
+              ),
+            ),
         ],
       ),
     );
   }
 
-  // Widget _buildSelectedDayEventsDesktop() {
-  //   return Container(
-  //     height: 200,
-  //     padding: const EdgeInsets.all(12),
-  //     decoration: BoxDecoration(
-  //       color: Colors.grey[200],
-  //       border: Border(
-  //         top: BorderSide(color: Colors.grey[300]!),
-  //   return Container(); 
-  // }
-
-  List<Map<String, dynamic>> _getEventsForDay(DateTime day) {
-    // ... (no changes in this method)
-    if (day.day == DateTime.now().day && day.month == DateTime.now().month) {
-      return [
-        {
-          'title': 'Team Meeting',
-          'time': '10:00 AM',
-          'color': Colors.blue,
-          'icon': Icons.meeting_room,
-        },
-        {
-          'title': 'Lunch Break',
-          'time': '12:30 PM',
-          'color': Colors.orange,
-          'icon': Icons.restaurant,
-        },
-      ];
+  void _showAddEventDialog(BuildContext context) async {
+    final provider = Provider.of<TodoProvider>(context, listen: false);
+    
+    final result = await showDialog<CalendarEvent>(
+      context: context,
+      builder: (context) => EventDialog(selectedDate: _selectedDay),
+    );
+    
+    if (result != null && mounted) {
+      await provider.addEvent(result);
     }
-    return [];
   }
 
-  void _showAddEventDialog(BuildContext context) {
-    // ... (no changes in this method)
+  void _showEditEventDialog(BuildContext context, CalendarEvent event) async {
+    final provider = Provider.of<TodoProvider>(context, listen: false);
+    
+    final result = await showDialog<CalendarEvent>(
+      context: context,
+      builder: (context) => EventDialog(
+        event: event,
+        selectedDate: _selectedDay,
+      ),
+    );
+    
+    if (result != null && mounted) {
+      await provider.updateEvent(result);
+    }
+  }
+
+  void _showDeleteEventDialog(BuildContext context, CalendarEvent event) {
+    final provider = Provider.of<TodoProvider>(context, listen: false);
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Row(
-          children: [
-            Icon(Icons.add, color: Colors.blue),
-            SizedBox(width: 8),
-            Text('Add Event'),
-          ],
-        ),
-        content: const Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Event Title',
-                border: OutlineInputBorder(),
-              ),
-            ),
-            SizedBox(height: 16),
-            TextField(
-              decoration: InputDecoration(
-                labelText: 'Time',
-                border: OutlineInputBorder(),
-              ),
-            ),
-          ],
-        ),
+        title: const Text('Delete Event'),
+        content: Text('Are you sure you want to delete "${event.title}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -417,10 +474,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
           ),
           ElevatedButton(
             onPressed: () {
-              // Add event logic
+              provider.deleteEvent(event.id);
               Navigator.of(context).pop();
             },
-            child: const Text('Add'),
+            style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
+            child: const Text('Delete'),
           ),
         ],
       ),
