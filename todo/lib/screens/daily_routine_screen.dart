@@ -101,6 +101,7 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       // appBar: AppBar(
       //   title: const Row(
@@ -119,6 +120,7 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
       //   ],
       // ),
       body: SingleChildScrollView(
+        // backgroundColor: isDark ? const Color(0xFF121212) : Colors.white,
         child: Column(
         children: [
           // Today's Date
@@ -128,7 +130,7 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
             // _buildProgressSummary(),
           
           // Routine List
-            _buildRoutineList(),
+            _buildRoutineList(isDark),
           ],
           ),
       ),
@@ -183,8 +185,7 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
     );
   }
 
-
-  Widget _buildRoutineList() {
+  Widget _buildRoutineList(bool isDark) {
     return ListView.builder(
       padding: const EdgeInsets.all(16),
       shrinkWrap: true,
@@ -194,11 +195,19 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
         final routine = _routines[index];
         final isCompleted = routine.completed;
         final isCurrentTime = _isCurrentTimeSlot(routine.time);
-        
+
         return Card(
           margin: const EdgeInsets.only(bottom: 12),
           elevation: isCurrentTime ? 4 : 2,
           color: isCurrentTime ? Colors.blue[50] : null,
+          shape: isDark
+              ? RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  side: const BorderSide(color: Colors.grey, width: 2),
+                )
+              : RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
           child: ListTile(
             leading: Container(
               width: 50,
@@ -206,11 +215,14 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
               decoration: BoxDecoration(
                 color: isCompleted ? Colors.grey : routine.color,
                 borderRadius: BorderRadius.circular(25),
+                border: isDark
+                    ? Border.all(color: Colors.grey, width: 2)
+                    : null,
               ),
               child: Icon(
                 routine.icon,
-                color: Colors.white,
-                size: 24,
+                color: isDark ? Colors.grey[200] : Colors.white,
+                size: 25,
               ),
             ),
             title: Text(
@@ -218,7 +230,7 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
               style: TextStyle(
                 fontWeight: FontWeight.w600,
                 decoration: isCompleted ? TextDecoration.lineThrough : null,
-                color: isCompleted ? Colors.grey : Colors.black87,
+                color: isDark ? Colors.white : Colors.black87,
               ),
             ),
             subtitle: Column(
@@ -227,7 +239,7 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
                 Text(
                   '${routine.time} • ${routine.duration}',
                   style: TextStyle(
-                    color: isCompleted ? Colors.grey : Colors.grey[600],
+                    color: isDark ? Colors.grey[200] : isCompleted ? Colors.grey : Colors.grey[600],
                   ),
                 ),
                 if (isCurrentTime)
@@ -378,6 +390,7 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
 
   void _showRoutineDialog({Routine? routine, int? editIndex}) {
     final isEdit = routine != null;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     IconData selectedIcon = isEdit ? routine.icon : Icons.fitness_center;
     Color selectedColor = isEdit ? routine.color : Colors.orange;
     final titleController = TextEditingController(text: isEdit ? routine.title : '');
@@ -412,7 +425,7 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             padding: EdgeInsets.zero,
-                            backgroundColor: Colors.grey[200],
+                            backgroundColor: isDark ? Colors.grey[400] : Colors.grey[200],
                             elevation: 0,
                           ),
                           onPressed: () async {
@@ -499,7 +512,7 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             padding: EdgeInsets.zero,
-                            backgroundColor: Colors.grey[200],
+                            backgroundColor: isDark ? Colors.grey[400] : Colors.grey[200],
                             elevation: 0,
                           ),
                           onPressed: () async {
