@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import 'screens/lichal_front_page.dart';
 import 'widgets/main_navigation.dart';
 import 'providers/todo_provider.dart';
-import 'styles/app_styles.dart';
+import 'providers/theme_provider.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,37 +19,20 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (context) => TodoProvider(),
-      child: MaterialApp(
-        title: 'Day Care',
-        debugShowCheckedModeBanner: false,
-        theme: ThemeData(
-          primarySwatch: Colors.green,
-          primaryColor: AppStyles.primaryBlue,
-          scaffoldBackgroundColor: Colors.grey[50],
-          appBarTheme: const AppBarTheme(
-            backgroundColor: AppStyles.primaryBlue,
-            elevation: 0,
-            centerTitle: true,
-            titleTextStyle: TextStyle(
-              color: AppStyles.white,
-              fontSize: 20,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          floatingActionButtonTheme: const FloatingActionButtonThemeData(
-            backgroundColor: AppStyles.primaryBlue,
-            foregroundColor: AppStyles.white,
-          ),
-          cardTheme: CardThemeData(
-            elevation: 2,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(12),
-            ),
-          ),
-        ),
-        home: const AuthWrapper(),
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (context) => TodoProvider()),
+        ChangeNotifierProvider(create: (context) => ThemeProvider()),
+      ],
+      child: Consumer<ThemeProvider>(
+        builder: (context, themeProvider, child) {
+          return MaterialApp(
+            title: 'Day Care',
+            debugShowCheckedModeBanner: false,
+            theme: themeProvider.currentTheme,
+            home: const AuthWrapper(),
+          );
+        },
       ),
     );
   }

@@ -84,6 +84,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
     final dueTimeStr = widget.todo.dueTime != null ? ' ${widget.todo.dueTime!.format(context)}' : '';
     final isOverdue = widget.todo.dueDate != null && widget.todo.dueDate!.isBefore(DateTime.now()) && !widget.todo.isCompleted;
     final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
       appBar: AppBar(
@@ -97,16 +98,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
         ),
       ),
       body: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              widget.todo.isCompleted ? Colors.green.shade50 : getPriorityColor(widget.todo.priority).withValues(alpha: 0.1),
-              Colors.white,
-            ],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
+        color: theme.scaffoldBackgroundColor,
         child: FadeTransition(
           opacity: _fadeAnimation,
           child: SlideTransition(
@@ -116,52 +108,37 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
               child: Center(
                 child: Card(
                   elevation: 16,
-                  shadowColor: getPriorityColor(widget.todo.priority).withValues(alpha: 0.3),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  shadowColor: getPriorityColor(widget.todo.priority).withValues(alpha: isDark ? 0.2 : 0.3),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(24),
+                    side: const BorderSide(color: Colors.white, width: 2),
+                  ),
                   margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
+                  color: theme.brightness == Brightness.dark ? Colors.white : Colors.black,
                   child: Container(
                     padding: const EdgeInsets.all(24.0),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(24),
-                      gradient: LinearGradient(
-                        colors: [
-                          Colors.white,
-                          Colors.grey.shade50,
-                        ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                      ),
+                      color: theme.cardColor,
+                      border: Border.all(color: Colors.white, width: 2),
                     ),
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // Header with completion status and title
-                        _buildHeader(theme),
+                        _buildHeader(theme, isDark),
                         const SizedBox(height: 20),
-                        
-                        // Description
                         if ((widget.todo.description ?? '').isNotEmpty)
-                          _buildDescription(theme),
-                        
+                          _buildDescription(theme, isDark),
                         const SizedBox(height: 20),
-                        
-                        // Due date and time
-                        _buildDueInfo(dueDateStr, dueTimeStr, isOverdue),
+                        _buildDueInfo(dueDateStr, dueTimeStr, isOverdue, theme, isDark),
                         const SizedBox(height: 16),
-                        
-                        // Priority and recurring info
-                        _buildPriorityAndRecurring(),
-                        
-                        // Tags
+                        _buildPriorityAndRecurring(isDark),
                         if (widget.todo.tags.isNotEmpty) ...[
                           const SizedBox(height: 16),
-                          _buildTags(),
+                          _buildTags(isDark),
                         ],
-                        
                         const SizedBox(height: 24),
-                        
-                        // Action buttons
                         _buildActionButtons(),
                       ],
                     ),
@@ -175,7 +152,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
     );
   }
 
-  Widget _buildHeader(ThemeData theme) {
+  Widget _buildHeader(ThemeData theme, bool isDark) {
     return Row(
       children: [
         AnimatedContainer(
@@ -199,8 +176,8 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
             widget.todo.title,
             style: theme.textTheme.titleLarge?.copyWith(
               fontWeight: FontWeight.bold,
-              color: Colors.black87,
-              fontSize: 24,
+              color: isDark ? Colors.white : Colors.black87,
+              fontSize: 28,
             ),
           ),
         ),
@@ -208,25 +185,25 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
     );
   }
 
-  Widget _buildDescription(ThemeData theme) {
+  Widget _buildDescription(ThemeData theme, bool isDark) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(8),
       decoration: BoxDecoration(
-        color: Colors.blue.shade50,
+        color: isDark ? Colors.blueGrey.shade900 : Colors.blue.shade50,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.blue.shade200),
+        border: Border.all(color: isDark ? Colors.blueGrey.shade700 : Colors.blue.shade200),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(Icons.description, color: Colors.blue.shade600, size: 20),
+          Icon(Icons.description, color: isDark ? Colors.blue[200] : Colors.blue.shade600, size: 30),
           const SizedBox(width: 12),
           Expanded(
             child: Text(
               widget.todo.description!,
               style: theme.textTheme.bodyLarge?.copyWith(
-                fontSize: 16, 
-                color: Colors.black87,
+                fontSize: 25, 
+                color: isDark ? Colors.white : Colors.black87,
                 height: 1.4,
               ),
             ),
@@ -236,22 +213,22 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
     );
   }
 
-  Widget _buildDueInfo(String dueDateStr, String dueTimeStr, bool isOverdue) {
+  Widget _buildDueInfo(String dueDateStr, String dueTimeStr, bool isOverdue, ThemeData theme, bool isDark) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: isOverdue ? Colors.red.shade50 : Colors.orange.shade50,
+        color: isOverdue ? (isDark ? Colors.red.shade900 : Colors.red.shade50) : (isDark ? Colors.orange.shade900 : Colors.orange.shade50),
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isOverdue ? Colors.red.shade200 : Colors.orange.shade200,
+          color: isOverdue ? (isDark ? Colors.red.shade700 : Colors.red.shade200) : (isDark ? Colors.orange.shade700 : Colors.orange.shade200),
         ),
       ),
       child: Row(
         children: [
           Icon(
             Icons.calendar_today, 
-            color: isOverdue ? Colors.red : Colors.orange, 
-            size: 20
+            color: isOverdue ? (isDark ? Colors.red[100] : Colors.red) : (isDark ? Colors.white : Colors.orange), 
+            size: 30
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -261,9 +238,9 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                 Text(
                   'Due: $dueDateStr$dueTimeStr',
                   style: TextStyle(
-                    color: isOverdue ? Colors.red : Colors.orange,
+                    color: isOverdue ? (isDark ? Colors.white : Colors.red) : (isDark ? Colors.white : Colors.orange),
                     fontWeight: FontWeight.w600,
-                    fontSize: 16,
+                    fontSize: 20,
                   ),
                 ),
                 if (isOverdue) ...[
@@ -278,7 +255,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
                       'OVERDUE',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 12,
+                        fontSize: 18,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
@@ -292,7 +269,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
     );
   }
 
-  Widget _buildPriorityAndRecurring() {
+  Widget _buildPriorityAndRecurring(bool isDark) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -310,15 +287,16 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
             children: [
               Icon(
                 Icons.flag, 
-                color: getPriorityColor(widget.todo.priority), 
-                size: 18
+                color: isDark ? Colors.red[100] : Colors.red, 
+                size: 25
               ),
               const SizedBox(width: 8),
               Text(
                 'Priority: ${widget.todo.priorityText}',
                 style: TextStyle(
-                  color: getPriorityColor(widget.todo.priority),
+                  color: isDark ? Colors.red[100] : Colors.red,
                   fontWeight: FontWeight.bold,
+                  fontSize: 20,
                 ),
               ),
             ],
@@ -329,20 +307,21 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
             decoration: BoxDecoration(
-              color: Colors.purple.shade50,
+              color: isDark ? Colors.purple.shade900 : Colors.purple.shade50,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.purple.shade200),
+              border: Border.all(color: isDark ? Colors.purple.shade700 : Colors.purple.shade200),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.repeat, color: Colors.purple, size: 18),
+                Icon(Icons.repeat, color: isDark ? Colors.purple[100] : Colors.purple, size: 25),
                 const SizedBox(width: 8),
                 Text(
                   'Recurring: ${widget.todo.recurringType!.name}',
-                  style: const TextStyle(
-                    color: Colors.purple,
+                  style: TextStyle(
+                    color: isDark ? Colors.purple[100] : Colors.purple,
                     fontWeight: FontWeight.bold,
+                    fontSize: 20,
                   ),
                 ),
               ],
@@ -353,16 +332,16 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
     );
   }
 
-  Widget _buildTags() {
+  Widget _buildTags(bool isDark) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
+        Text(
           'Tags:',
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 20,
             fontWeight: FontWeight.bold,
-            color: Colors.black87,
+            color: isDark ? Colors.white : Colors.black87,
           ),
         ),
         const SizedBox(height: 8),
@@ -372,21 +351,22 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
           children: widget.todo.tags.map((tag) => Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
             decoration: BoxDecoration(
-              color: Colors.blue.shade100,
+              color: isDark ? Colors.blueGrey.shade800 : Colors.blue.shade100,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.blue.shade300),
+              border: Border.all(color: isDark ? Colors.blueGrey.shade700 : Colors.blue.shade300),
             ),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.label, color: Colors.blue, size: 16),
+                Icon(Icons.label, color: isDark ? Colors.blue[200] : Colors.blue, size: 25),
                 const SizedBox(width: 6),
                 Text(
                   tag,
-                  style: const TextStyle(
-                    color: Colors.blue,
+                  style: TextStyle(
+                    color: isDark ? Colors.blue[100] : Colors.blue,
                     fontWeight: FontWeight.w600,
-                  ),
+                    fontSize: 20,
+                    ),
                 ),
               ],
             ),
@@ -402,10 +382,10 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
         width: double.infinity,
         height: 56,
         child: ElevatedButton.icon(
-          icon: const Icon(Icons.check, size: 24),
+          icon: const Icon(Icons.check, size: 30),
           label: const Text(
             'Mark as Completed',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
           style: ElevatedButton.styleFrom(
             backgroundColor: getPriorityColor(widget.todo.priority),
@@ -438,7 +418,7 @@ class _TaskDetailScreenState extends State<TaskDetailScreen>
             Text(
               'Task Completed',
               style: TextStyle(
-                fontSize: 18,
+                fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: Colors.green,
               ),

@@ -237,7 +237,7 @@ class _TimelineScreenState extends State<TimelineScreen> {
                           ),
                           Text(
                             DateFormat('EEEE, MMMM d, yyyy').format(_selectedDate),
-                            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color.fromARGB(255, 7, 11, 142)),
+                            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Theme.of(context).brightness == Brightness.dark ? Colors.white : const Color.fromARGB(255, 7, 11, 142)),
                           ),
                         ],
                       ),
@@ -275,22 +275,38 @@ class _TimelineScreenState extends State<TimelineScreen> {
                     separatorBuilder: (_, __) => const Divider(),
                     itemBuilder: (context, index) {
                       final entry = timelineEntries[index];
-                      return ListTile(
-                        leading: CircleAvatar(
-                          backgroundColor: entry.color,
-                          child: Icon(entry.icon, color: Colors.white),
+                      final theme = Theme.of(context);
+                      final isDark = theme.brightness == Brightness.dark;
+                      return Card(
+                        shape: RoundedRectangleBorder(
+                          side: const BorderSide(color: Colors.white, width: 1.5),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        title: Text(
-                          entry.title,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            decoration: entry.isCompleted ? TextDecoration.lineThrough : null,
+                        color: theme.cardColor,
+                        elevation: 2,
+                        child: ListTile(
+                          leading: CircleAvatar(
+                            backgroundColor: entry.color,
+                            child: Icon(entry.icon, color: Colors.white),
                           ),
+                          title: Text(
+                            entry.title,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              fontWeight: FontWeight.bold,
+                              color: isDark ? Colors.white : Colors.black87,
+                              decoration: entry.isCompleted ? TextDecoration.lineThrough : null,
+                            ),
+                          ),
+                          subtitle: Text(
+                            '${entry.type} • ${DateFormat('HH:mm').format(entry.time)}',
+                            style: theme.textTheme.bodyMedium?.copyWith(
+                              color: isDark ? Colors.white70 : Colors.black54,
+                            ),
+                          ),
+                          trailing: entry.isCompleted
+                              ? const Icon(Icons.check_circle, color: Colors.green)
+                              : null,
                         ),
-                        subtitle: Text('${entry.type} • ${DateFormat('HH:mm').format(entry.time)}'),
-                        trailing: entry.isCompleted
-                            ? const Icon(Icons.check_circle, color: Colors.green)
-                            : null,
                       );
                     },
                   ),

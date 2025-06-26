@@ -41,9 +41,9 @@ class AllTasksScreen extends StatelessWidget {
         ),
       ),
       body: Container(
-        decoration: const BoxDecoration(
+        decoration: BoxDecoration(
           gradient: LinearGradient(
-            colors: [Color(0xFFE3F0FF), Color(0xFFF8F8FF)],
+            colors: Theme.of(context).brightness == Brightness.dark ? [const Color(0xFF121212), const Color(0xFF121212)] : [const Color(0xFFE3F0FF), const Color(0xFFF8F8FF)],
             begin: Alignment.topLeft,
             end: Alignment.bottomRight,
           ),
@@ -96,6 +96,7 @@ class AllTasksScreen extends StatelessWidget {
   }
 
   Widget _buildTaskCard(BuildContext context, Todo todo, String dueDateStr, String dueTimeStr, bool isOverdue, ThemeData theme) {
+    final isDark = theme.brightness == Brightness.dark;
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
@@ -105,7 +106,7 @@ class AllTasksScreen extends StatelessWidget {
           onTap: () {
             // Add haptic feedback
             HapticFeedback.lightImpact();
-            
+
             // Navigate with custom transition
             Navigator.of(context).push(
               PageRouteBuilder(
@@ -114,10 +115,10 @@ class AllTasksScreen extends StatelessWidget {
                   const begin = Offset(1.0, 0.0);
                   const end = Offset.zero;
                   const curve = Curves.easeInOutCubic;
-                  
+
                   var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
                   var offsetAnimation = animation.drive(tween);
-                  
+
                   return SlideTransition(position: offsetAnimation, child: child);
                 },
                 transitionDuration: const Duration(milliseconds: 400),
@@ -127,24 +128,19 @@ class AllTasksScreen extends StatelessWidget {
           borderRadius: BorderRadius.circular(20),
           child: Container(
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  Colors.white,
-                  Colors.grey.shade50,
-                ],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
+              color: theme.cardColor,
               borderRadius: BorderRadius.circular(20),
               border: Border.all(
-                color: isOverdue 
-                    ? Colors.red.withValues(alpha: 0.3)
-                    : getPriorityColor(todo.priority).withValues(alpha: 0.3),
+                color: isOverdue
+                    ? (isDark ? Colors.red.shade700 : Colors.red.shade800)
+                    : (isDark
+                        ? Colors.white
+                        : getPriorityColor(todo.priority)),
                 width: 1.5,
               ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.08),
+                  color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.08),
                   blurRadius: 12,
                   offset: const Offset(0, 4),
                 ),
@@ -168,13 +164,13 @@ class AllTasksScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 16),
-                      
+
                       // Completion status icon
                       AnimatedContainer(
                         duration: const Duration(milliseconds: 200),
                         padding: const EdgeInsets.all(8),
                         decoration: BoxDecoration(
-                          color: todo.isCompleted 
+                          color: todo.isCompleted
                               ? Colors.green.withValues(alpha: 0.1)
                               : getPriorityColor(todo.priority).withValues(alpha: 0.1),
                           borderRadius: BorderRadius.circular(12),
@@ -186,19 +182,19 @@ class AllTasksScreen extends StatelessWidget {
                         ),
                       ),
                       const SizedBox(width: 16),
-                      
+
                       // Title
                       Expanded(
                         child: Text(
                           todo.title,
                           style: theme.textTheme.titleLarge?.copyWith(
                             fontWeight: FontWeight.bold,
-                            color: Colors.black87,
                             decoration: todo.isCompleted ? TextDecoration.lineThrough : null,
+                            fontSize: 25,
                           ),
                         ),
                       ),
-                      
+
                       // Overdue badge
                       if (isOverdue)
                         Container(
@@ -218,35 +214,35 @@ class AllTasksScreen extends StatelessWidget {
                             'OVERDUE',
                             style: TextStyle(
                               color: Colors.white,
-                              fontSize: 10,
+                              fontSize: 15,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         ),
                     ],
                   ),
-                  
+
                   // Description
                   if ((todo.description ?? '').isNotEmpty) ...[
                     const SizedBox(height: 16),
                     Container(
-                      padding: const EdgeInsets.all(12),
+                      padding: const EdgeInsets.all(8),
                       decoration: BoxDecoration(
-                        color: Colors.blue.shade50,
+                        color: isDark ? Colors.blueGrey.shade900 : Colors.blue.shade50,
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.blue.shade200),
+                        border: Border.all(color: isDark ? Colors.blueGrey.shade700 : Colors.blue.shade200),
                       ),
                       child: Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.description, color: Colors.blue.shade600, size: 18),
+                          Icon(Icons.description, color: isDark ? Colors.blue[200] : Colors.blue.shade600, size: 25),
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
                               todo.description!,
                               style: theme.textTheme.bodyLarge?.copyWith(
-                                fontSize: 14,
-                                color: Colors.black87,
+                                fontSize: 18,
+                                color: isDark ? Colors.white70 : Colors.black87,
                                 height: 1.4,
                               ),
                             ),
@@ -255,41 +251,41 @@ class AllTasksScreen extends StatelessWidget {
                       ),
                     ),
                   ],
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // Due date and time
                   Container(
-                    padding: const EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      color: isOverdue ? Colors.red.shade50 : Colors.orange.shade50,
+                      color: isOverdue ? (isDark ? Colors.red.shade900 : Colors.red.shade50) : (isDark ? Colors.orange.shade900 : Colors.orange.shade50),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: isOverdue ? Colors.red.shade200 : Colors.orange.shade200,
+                        color: isOverdue ? (isDark ? Colors.red.shade700 : Colors.red.shade200) : (isDark ? Colors.orange.shade700 : Colors.orange.shade200),
                       ),
                     ),
                     child: Row(
                       children: [
                         Icon(
                           Icons.calendar_today,
-                          color: isOverdue ? Colors.red : Colors.orange,
-                          size: 18,
+                          color: isOverdue ? (isDark ? Colors.white : Colors.red) : (isDark ? Colors.white : Colors.orange),
+                          size: 25,
                         ),
                         const SizedBox(width: 8),
                         Text(
                           'Due: $dueDateStr$dueTimeStr',
                           style: TextStyle(
-                            color: isOverdue ? Colors.red : Colors.orange,
+                            color: isOverdue ? (isDark ? Colors.white : Colors.red) : (isDark ? Colors.white : Colors.orange.shade700),
                             fontWeight: FontWeight.w600,
-                            fontSize: 14,
+                            fontSize: 18,
                           ),
                         ),
                       ],
                     ),
                   ),
-                  
+
                   const SizedBox(height: 16),
-                  
+
                   // Priority and recurring info
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -309,7 +305,7 @@ class AllTasksScreen extends StatelessWidget {
                             Icon(
                               Icons.flag,
                               color: getPriorityColor(todo.priority),
-                              size: 16,
+                              size: 25,
                             ),
                             const SizedBox(width: 6),
                             Text(
@@ -317,7 +313,7 @@ class AllTasksScreen extends StatelessWidget {
                               style: TextStyle(
                                 color: getPriorityColor(todo.priority),
                                 fontWeight: FontWeight.bold,
-                                fontSize: 12,
+                                fontSize: 18,
                               ),
                             ),
                           ],
@@ -328,21 +324,21 @@ class AllTasksScreen extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                           decoration: BoxDecoration(
-                            color: Colors.purple.shade50,
+                            color: isDark ? Colors.purple.shade900 : Colors.purple.shade50,
                             borderRadius: BorderRadius.circular(12),
-                            border: Border.all(color: Colors.purple.shade200),
+                            border: Border.all(color: isDark ? Colors.purple.shade700 : Colors.purple.shade200),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(Icons.repeat, color: Colors.purple, size: 16),
+                              Icon(Icons.repeat, color: isDark ? Colors.purple[100] : Colors.purple, size: 25),
                               const SizedBox(width: 6),
                               Text(
                                 'Recurring: ${todo.recurringType!.name}',
-                                style: const TextStyle(
-                                  color: Colors.purple,
+                                style: TextStyle(
+                                  color: isDark ? Colors.purple[100] : Colors.purple,
                                   fontWeight: FontWeight.bold,
-                                  fontSize: 12,
+                                  fontSize: 18,
                                 ),
                               ),
                             ],
@@ -351,7 +347,7 @@ class AllTasksScreen extends StatelessWidget {
                       ],
                     ],
                   ),
-                  
+
                   // Custom recurring days
                   if (todo.isRecurring && todo.recurringType == RecurringType.custom && todo.customDays != null && todo.customDays!.isNotEmpty) ...[
                     const SizedBox(height: 12),
@@ -360,22 +356,22 @@ class AllTasksScreen extends StatelessWidget {
                       children: todo.customDays!.map((d) => Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: Colors.purple.shade100,
+                          color: isDark ? Colors.purple.shade800 : Colors.purple.shade100,
                           borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.purple.shade300),
+                          border: Border.all(color: isDark ? Colors.purple.shade700 : Colors.purple.shade300),
                         ),
                         child: Text(
                           ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][d-1],
-                          style: const TextStyle(
-                            color: Colors.purple,
+                          style: TextStyle(
+                            color: isDark ? Colors.purple[100] : Colors.purple,
                             fontWeight: FontWeight.bold,
-                            fontSize: 11,
+                            fontSize: 15,
                           ),
                         ),
                       )).toList(),
                     ),
                   ],
-                  
+
                   // Tags
                   if (todo.tags.isNotEmpty) ...[
                     const SizedBox(height: 12),
@@ -385,21 +381,21 @@ class AllTasksScreen extends StatelessWidget {
                       children: todo.tags.map((tag) => Container(
                         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                         decoration: BoxDecoration(
-                          color: Colors.blue.shade100,
+                          color: isDark ? Colors.blueGrey.shade800 : Colors.blue.shade100,
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: Colors.blue.shade300),
+                          border: Border.all(color: isDark ? Colors.blueGrey.shade700 : Colors.blue.shade300),
                         ),
                         child: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            const Icon(Icons.label, color: Colors.blue, size: 14),
+                            Icon(Icons.label, color: isDark ? Colors.blue[200] : Colors.blue, size: 25),
                             const SizedBox(width: 4),
                             Text(
                               tag,
-                              style: const TextStyle(
-                                color: Colors.blue,
+                              style: TextStyle(
+                                color: isDark ? Colors.blue[100] : Colors.blue,
                                 fontWeight: FontWeight.w600,
-                                fontSize: 12,
+                                fontSize: 18,
                               ),
                             ),
                           ],
@@ -407,24 +403,24 @@ class AllTasksScreen extends StatelessWidget {
                       )).toList(),
                     ),
                   ],
-                  
-                  // Arrow indicator
-                  const SizedBox(height: 16),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: getPriorityColor(todo.priority).withValues(alpha: 0.1),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: Icon(
-                        Icons.arrow_forward_ios,
-                        size: 16,
-                        color: getPriorityColor(todo.priority),
-                      ),
-                    ),
-                  ),
+
+                  // // Arrow indicator
+                  // const SizedBox(height: 16),
+                  // Align(
+                  //   alignment: Alignment.centerRight,
+                  //   child: Container(
+                  //     padding: const EdgeInsets.all(8),
+                  //     decoration: BoxDecoration(
+                  //       color: getPriorityColor(todo.priority).withValues(alpha: 0.1),
+                  //       borderRadius: BorderRadius.circular(12),
+                  //     ),
+                  //     child: Icon(
+                  //       Icons.arrow_forward_ios,
+                  //       size: 16,
+                  //       color: getPriorityColor(todo.priority),
+                  //     ),
+                  //   ),
+                  // ),
                 ],
               ),
             ),

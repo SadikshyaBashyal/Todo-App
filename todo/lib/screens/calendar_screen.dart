@@ -339,67 +339,78 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   itemCount: events.length,
                     itemBuilder: (context, index) {
                     final event = events[index];
+                    final theme = Theme.of(context);
+                    final isDark = theme.brightness == Brightness.dark;
                       return Card(
+                        color: theme.cardColor,
                         margin: const EdgeInsets.only(bottom: 8),
                         child: ListTile(
                           leading: CircleAvatar(
-                          backgroundColor: event.color,
+                            backgroundColor: event.color,
                             child: Icon(
-                            event.icon,
+                              event.icon,
                               color: Colors.white,
                               size: 16,
                             ),
                           ),
-                        title: Text(
-                          event.title,
-                          style: TextStyle(
-                            decoration: event.isCompleted 
-                                ? TextDecoration.lineThrough 
-                                : null,
+                          title: Text(
+                            event.title,
+                            style: theme.textTheme.titleMedium?.copyWith(
+                              decoration: event.isCompleted 
+                                  ? TextDecoration.lineThrough 
+                                  : null,
+                              color: isDark ? Colors.white : Colors.black87,
+                            ),
                           ),
-                        ),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            if (event.description.isNotEmpty)
-                              Text(event.description),
-                            Text(event.timeString),
-                            if (event.recurringType != EventRecurringType.none)
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              if (event.description.isNotEmpty)
+                                Text(
+                                  event.description,
+                                  style: theme.textTheme.bodyMedium?.copyWith(
+                                    color: isDark ? Colors.white70 : Colors.black87,
+                                  ),
+                                ),
                               Text(
-                                event.recurringString,
-                                style: TextStyle(
-                                  color: Colors.grey[600],
-                                  fontSize: 12,
+                                event.timeString,
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: isDark ? Colors.white54 : Colors.grey[700],
                                 ),
                               ),
-                          ],
-                        ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // Check button (only toggles completion)
-                            IconButton(
-                              icon: Icon(
-                                event.isCompleted 
-                                    ? Icons.check_circle 
-                                    : Icons.check_circle_outline,
-                                color: event.isCompleted ? Colors.green : Colors.grey,
+                              if (event.recurringType != EventRecurringType.none)
+                                Text(
+                                  event.recurringString,
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: isDark ? Colors.purple[200] : Colors.purple,
+                                    fontSize: 12,
+                                  ),
+                                ),
+                            ],
+                          ),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              IconButton(
+                                icon: Icon(
+                                  event.isCompleted 
+                                      ? Icons.check_circle 
+                                      : Icons.check_circle_outline,
+                                  color: event.isCompleted ? Colors.green : (isDark ? Colors.white54 : Colors.grey),
+                                ),
+                                onPressed: () {
+                                  provider.toggleEventCompletion(event.id);
+                                },
                               ),
-                              onPressed: () {
-                                provider.toggleEventCompletion(event.id);
-                              },
-                            ),
-                            // Edit button
-                            IconButton(
-                              icon: const Icon(Icons.edit, color: Colors.blue),
-                              onPressed: () => _showEditEventDialog(context, event),
-                            ),
-                            // Delete button
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () => _showDeleteEventDialog(context, event),
-                            ),
-                          ],
+                              IconButton(
+                                icon: const Icon(Icons.edit, color: Colors.blue),
+                                onPressed: () => _showEditEventDialog(context, event),
+                              ),
+                              IconButton(
+                                icon: const Icon(Icons.delete, color: Colors.red),
+                                onPressed: () => _showDeleteEventDialog(context, event),
+                              ),
+                            ],
                           ),
                         ),
                       );

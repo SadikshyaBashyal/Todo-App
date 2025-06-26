@@ -69,6 +69,7 @@ class _MainNavigationState extends State<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
         title: const Row(
@@ -166,9 +167,9 @@ class _MainNavigationState extends State<MainNavigation> {
             _loadTimeFormatPreference();
           }
         },
-        selectedItemColor: const Color.fromARGB(255, 50, 202, 57),
-        unselectedItemColor: const Color.fromARGB(255, 94, 93, 93),
-        backgroundColor: Colors.white,
+        selectedItemColor: isDark ? const Color.fromARGB(255, 50, 202, 57) : const Color.fromARGB(255, 50, 202, 57),
+        unselectedItemColor: isDark ? Colors.white : const Color.fromARGB(255, 94, 93, 93),
+        backgroundColor: isDark ? const Color(0xFF222222) : Colors.white,
         elevation: 8,
         selectedLabelStyle: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
         unselectedLabelStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),

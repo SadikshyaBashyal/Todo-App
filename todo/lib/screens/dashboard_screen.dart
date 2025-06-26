@@ -279,6 +279,8 @@ class DashboardScreen extends StatelessWidget {
   }
 
   Widget _buildTaskCard(BuildContext context, Todo todo) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical:10),
       child: AnimatedContainer(
@@ -288,10 +290,7 @@ class DashboardScreen extends StatelessWidget {
           color: Colors.transparent,
           child: InkWell(
             onTap: () {
-              // Add haptic feedback
               HapticFeedback.lightImpact();
-              
-              // Navigate with custom transition
               Navigator.of(context).push(
                 PageRouteBuilder(
                   pageBuilder: (context, animation, secondaryAnimation) => TaskDetailScreen(todo: todo),
@@ -299,10 +298,8 @@ class DashboardScreen extends StatelessWidget {
                     const begin = Offset(1.0, 0.0);
                     const end = Offset.zero;
                     const curve = Curves.easeInOutCubic;
-                    
                     var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
                     var offsetAnimation = animation.drive(tween);
-                    
                     return SlideTransition(position: offsetAnimation, child: child);
                   },
                   transitionDuration: const Duration(milliseconds: 400),
@@ -313,14 +310,7 @@ class DashboardScreen extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.white,
-                    Colors.grey.shade50,
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
+                color: theme.cardColor,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: _getPriorityColor(todo.priority).withValues(alpha: 0.3),
@@ -328,7 +318,7 @@ class DashboardScreen extends StatelessWidget {
                 ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.black.withValues(alpha: 0.05),
+                    color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.05),
                     blurRadius: 8,
                     offset: const Offset(0, 2),
                   ),
@@ -336,7 +326,6 @@ class DashboardScreen extends StatelessWidget {
               ),
               child: Row(
                 children: [
-                  // Priority indicator
                   Container(
                     width: 5,
                     height: 70,
@@ -346,8 +335,6 @@ class DashboardScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(width: 16),
-                  
-                  // Task content
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -357,10 +344,9 @@ class DashboardScreen extends StatelessWidget {
                             Expanded(
                               child: Text(
                                 todo.title,
-                                style: const TextStyle(
+                                style: theme.textTheme.titleLarge?.copyWith(
                                   fontSize: 22,
                                   fontWeight: FontWeight.w600,
-                                  color: Colors.black87,
                                 ),
                                 maxLines: 2,
                                 overflow: TextOverflow.ellipsis,
@@ -387,9 +373,9 @@ class DashboardScreen extends StatelessWidget {
                           const SizedBox(height: 4),
                           Text(
                             todo.description!,
-                            style: TextStyle(
+                            style: theme.textTheme.bodyMedium?.copyWith(
                               fontSize: 17,
-                              color: Colors.grey[600],
+                              color: isDark ? Colors.white70 : Colors.grey[600],
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -400,15 +386,15 @@ class DashboardScreen extends StatelessWidget {
                           children: [
                             Icon(
                               Icons.access_time,
-                              size: 25,
-                              color: Colors.grey[500],
+                              size: 20,
+                              color: isDark ? Colors.white54 : Colors.grey[500],
                             ),
                             const SizedBox(width: 4),
                             Text(
                               DateFormat('HH:mm').format(todo.createdAt),
-                              style: TextStyle(
+                              style: theme.textTheme.bodySmall?.copyWith(
                                 fontSize: 18,
-                                color: Colors.grey[500],
+                                color: isDark ? Colors.white54 : Colors.grey[500],
                                 fontWeight: FontWeight.w500,
                               ),
                             ),
@@ -416,15 +402,15 @@ class DashboardScreen extends StatelessWidget {
                               const SizedBox(width: 16),
                               Icon(
                                 Icons.calendar_today,
-                                size: 25,
-                                color: todo.isOverdue ? Colors.red : Colors.grey[500],
+                                size: 20,
+                                color: todo.isOverdue ? Colors.red : (isDark ? Colors.white54 : Colors.grey[500]),
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 DateFormat('MMM dd').format(todo.dueDate!),
-                                style: TextStyle(
+                                style: theme.textTheme.bodySmall?.copyWith(
                                   fontSize: 18,
-                                  color: todo.isOverdue ? Colors.red : Colors.grey[500],
+                                  color: todo.isOverdue ? Colors.red : (isDark ? Colors.white54 : Colors.grey[500]),
                                   fontWeight: todo.isOverdue ? FontWeight.bold : FontWeight.w500,
                                 ),
                               ),
@@ -434,8 +420,6 @@ class DashboardScreen extends StatelessWidget {
                       ],
                     ),
                   ),
-                  
-                  // Arrow indicator
                   Container(
                     padding: const EdgeInsets.all(8),
                     decoration: BoxDecoration(
@@ -444,7 +428,7 @@ class DashboardScreen extends StatelessWidget {
                     ),
                     child: Icon(
                       Icons.arrow_forward_ios,
-                      size: 25,
+                      size: 16,
                       color: _getPriorityColor(todo.priority),
                     ),
                   ),
