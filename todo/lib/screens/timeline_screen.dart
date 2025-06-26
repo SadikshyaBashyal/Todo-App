@@ -104,27 +104,46 @@ class _TimelineScreenState extends State<TimelineScreen> {
   Widget build(BuildContext context) {
     // Filter todos for timeline display
     final todos = _todos.where((todo) {
-      if (todo['isCompleted'] ?? false) return false;
       final selected = _selectedDate;
       final today = DateTime.now();
       final selectedDay = DateTime(selected.year, selected.month, selected.day);
       final currentDay = DateTime(today.year, today.month, today.day);
       final dueDate = todo['dueDate'] != null ? DateTime.parse(todo['dueDate']) : null;
+      final isCompleted = todo['isCompleted'] ?? false;
+      final completedAt = todo['completedAt'] != null ? DateTime.parse(todo['completedAt']) : null;
       final isRecurring = todo['isRecurring'] ?? false;
       final recurringType = todo['recurringType'];
       final customDays = todo['customDays'] != null ? List<int>.from(todo['customDays']) : null;
-      if (isRecurring && recurringType == 'custom' && customDays != null && customDays.isNotEmpty) {
-        // Show if selectedDay's weekday matches a custom day and is in range
-        final inDateRange = dueDate == null ? !selectedDay.isBefore(currentDay) : (!selectedDay.isBefore(currentDay) && !selectedDay.isAfter(dueDate));
-        return customDays.contains(selectedDay.weekday) && inDateRange;
+      
+      // For completed tasks, show them on the day they were completed
+      if (isCompleted && completedAt != null) {
+        final completedDay = DateTime(completedAt.year, completedAt.month, completedAt.day);
+        return selectedDay == completedDay;
       }
-      if (dueDate != null) {
-        // Show from today to due date (inclusive)
-        return !selectedDay.isBefore(currentDay) && !selectedDay.isAfter(dueDate);
-      } else {
-        // Show only on today (not on creation day or any other day)
-        return selectedDay == currentDay;
+      
+      // For uncompleted tasks, only show them from today onwards
+      if (!isCompleted) {
+        // Don't show uncompleted tasks in past days
+        if (selectedDay.isBefore(currentDay)) {
+          return false;
+        }
+        
+        if (isRecurring && recurringType == 'custom' && customDays != null && customDays.isNotEmpty) {
+          // Show if selectedDay's weekday matches a custom day and is in range
+          final inDateRange = dueDate == null ? !selectedDay.isBefore(currentDay) : (!selectedDay.isBefore(currentDay) && !selectedDay.isAfter(dueDate));
+          return customDays.contains(selectedDay.weekday) && inDateRange;
+        }
+        
+        if (dueDate != null) {
+          // Show from today to due date (inclusive)
+          return !selectedDay.isBefore(currentDay) && !selectedDay.isAfter(dueDate);
+        } else {
+          // Show only on today (not on creation day or any other day)
+          return selectedDay == currentDay;
+        }
       }
+      
+      return false;
     }).toList();
     // Filter events for selected date using recurrence
     final events = _events.map((event) {
