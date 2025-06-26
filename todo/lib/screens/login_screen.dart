@@ -21,7 +21,6 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _passwordController = TextEditingController();
-  String? _error;
 
   @override
   void dispose() {
@@ -37,21 +36,83 @@ class _LoginScreenState extends State<LoginScreen> {
       
       final success = await AuthUtils.authenticateUser(provider, username, password);
       
-      if (success && mounted) {
+      if (!mounted) return;
+      if (success) {
         AuthUtils.navigateToMainNavigation(context);
       } else {
-        setState(() {
-          _error = 'Invalid username or password';
-        });
+        _showTopNotification(context, 'Invalid username or password', isSuccess: false);
       }
     }
   }
 
   void _quickLogin(TodoProvider provider, AppUser user) async {
     await provider.setCurrentUser(user.username);
-    if (mounted) {
-      AuthUtils.navigateToMainNavigation(context);
-    }
+    if (!mounted) return;
+    AuthUtils.navigateToMainNavigation(context);
+  }
+
+  void _showTopNotification(BuildContext context, String message, {bool isSuccess = true}) {
+    final overlay = Overlay.of(context);
+    late OverlayEntry overlayEntry;
+    
+    overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: MediaQuery.of(context).padding.top + 10,
+        right: 10,
+        left: 10,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: isSuccess ? Colors.green[600] : Colors.red[600],
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  isSuccess ? Icons.check_circle : Icons.error,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    message,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                  onPressed: () => overlayEntry.remove(),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    
+    overlay.insert(overlayEntry);
+    
+    // Auto remove after 3 seconds
+    Future.delayed(const Duration(seconds: 3), () {
+      if (overlayEntry.mounted) {
+        overlayEntry.remove();
+      }
+    });
   }
 
   @override
@@ -110,10 +171,6 @@ class _LoginScreenState extends State<LoginScreen> {
                               obscureText: true,
                               validator: AuthUtils.validatePassword,
                             ),
-                            if (_error != null) ...[
-                              const SizedBox(height: 12),
-                              Text(_error!, style: const TextStyle(color: Colors.red)),
-                            ],
                             const SizedBox(height: 24),
                             AuthWidgets.loadingButton(
                               onPressed: () => _login(provider),

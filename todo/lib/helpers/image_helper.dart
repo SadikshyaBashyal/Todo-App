@@ -80,16 +80,38 @@ class ImageHelper {
   }
 
   /// Checks if the current platform supports camera
+  /// Camera is supported on mobile and web, but not on desktop platforms
   static bool supportsCamera() {
-    return !kIsWeb;
+    if (kIsWeb) {
+      return true; // Web supports camera
+    } else {
+      // Check if it's a mobile platform
+      return Platform.isAndroid || Platform.isIOS;
+    }
   }
 
   /// Gets appropriate text for image picker based on platform
   static String getImagePickerText(bool hasImage) {
-    if (kIsWeb) {
-      return hasImage ? 'Photo selected' : 'Tap to add photo (Gallery only)';
+    if (hasImage) {
+      return 'Photo selected';
     } else {
-      return hasImage ? 'Photo selected' : 'Tap to add photo (Gallery/Camera)';
+      if (supportsCamera()) {
+        return 'Tap to add photo (Gallery/Camera)';
+      } else {
+        return 'Tap to add photo (Gallery only)';
+      }
     }
+  }
+
+  /// Platform-specific camera availability check
+  /// This provides more detailed information about camera support
+  static Map<String, bool> getPlatformCapabilities() {
+    return {
+      'camera': supportsCamera(),
+      'gallery': true, // image_picker supports gallery on all platforms
+      'web': kIsWeb,
+      'mobile': !kIsWeb && (Platform.isAndroid || Platform.isIOS),
+      'desktop': !kIsWeb && (Platform.isWindows || Platform.isMacOS || Platform.isLinux),
+    };
   }
 } 

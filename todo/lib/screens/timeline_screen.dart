@@ -102,11 +102,29 @@ class _TimelineScreenState extends State<TimelineScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Filter todos for selected date
+    // Filter todos for timeline display
     final todos = _todos.where((todo) {
-      final createdAt = DateTime.parse(todo['createdAt']);
-      final dueDate = todo['dueDate'] != null ? DateTime.parse(todo['dueDate']) : createdAt;
-      return dueDate.year == _selectedDate.year && dueDate.month == _selectedDate.month && dueDate.day == _selectedDate.day;
+      if (todo['isCompleted'] ?? false) return false;
+      final selected = _selectedDate;
+      final today = DateTime.now();
+      final selectedDay = DateTime(selected.year, selected.month, selected.day);
+      final currentDay = DateTime(today.year, today.month, today.day);
+      final dueDate = todo['dueDate'] != null ? DateTime.parse(todo['dueDate']) : null;
+      final isRecurring = todo['isRecurring'] ?? false;
+      final recurringType = todo['recurringType'];
+      final customDays = todo['customDays'] != null ? List<int>.from(todo['customDays']) : null;
+      if (isRecurring && recurringType == 'custom' && customDays != null && customDays.isNotEmpty) {
+        // Show if selectedDay's weekday matches a custom day and is in range
+        final inDateRange = dueDate == null ? !selectedDay.isBefore(currentDay) : (!selectedDay.isBefore(currentDay) && !selectedDay.isAfter(dueDate));
+        return customDays.contains(selectedDay.weekday) && inDateRange;
+      }
+      if (dueDate != null) {
+        // Show from today to due date (inclusive)
+        return !selectedDay.isBefore(currentDay) && !selectedDay.isAfter(dueDate);
+      } else {
+        // Show only on today (not on creation day or any other day)
+        return selectedDay == currentDay;
+      }
     }).toList();
     // Filter events for selected date using recurrence
     final events = _events.map((event) {

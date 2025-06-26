@@ -21,6 +21,7 @@ class _MainNavigationState extends State<MainNavigation> {
   bool _is24HourFormat = false;
   late DateTime _currentTime;
   late Timer _timer;
+  bool _hasShownLoginNotification = false;
 
   final List<Widget> _screens = [
     const DashboardScreen(),
@@ -39,6 +40,17 @@ class _MainNavigationState extends State<MainNavigation> {
       setState(() {
         _currentTime = DateTime.now();
       });
+    });
+    // Show login success notification after a short delay
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!_hasShownLoginNotification) {
+        _hasShownLoginNotification = true;
+        Future.delayed(const Duration(milliseconds: 500), () {
+          if (mounted) {
+            _showTopNotification(context, 'Login successful!', isSuccess: true);
+          }
+        });
+      }
     });
   }
 
@@ -189,5 +201,69 @@ class _MainNavigationState extends State<MainNavigation> {
   Future<void> _saveTimeFormatPreference() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString('selectedTimeFormat', _is24HourFormat ? '24-hour' : '12-hour');
+  }
+
+  void _showTopNotification(BuildContext context, String message, {bool isSuccess = true}) {
+    final overlay = Overlay.of(context);
+    late OverlayEntry overlayEntry;
+    
+    overlayEntry = OverlayEntry(
+      builder: (context) => Positioned(
+        top: MediaQuery.of(context).padding.top + 10,
+        right: 10,
+        left: 10,
+        child: Material(
+          color: Colors.transparent,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            decoration: BoxDecoration(
+              color: isSuccess ? Colors.green[600] : Colors.red[600],
+              borderRadius: BorderRadius.circular(10),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 8,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Icon(
+                  isSuccess ? Icons.check_circle : Icons.error,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    message,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w500,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close, color: Colors.white, size: 20),
+                  onPressed: () => overlayEntry.remove(),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+    
+    overlay.insert(overlayEntry);
+    
+    // Auto remove after 3 seconds
+    Future.delayed(const Duration(seconds: 3), () {
+      if (overlayEntry.mounted) {
+        overlayEntry.remove();
+      }
+    });
   }
 } 

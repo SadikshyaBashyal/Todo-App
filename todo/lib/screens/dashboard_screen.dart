@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/intl.dart';
 import '../providers/todo_provider.dart';
+import '../models/todo.dart';
 import 'timeline_screen.dart';
 import 'all_tasks_screen.dart';
 import 'task_detail_screen.dart';
@@ -53,12 +55,12 @@ class DashboardScreen extends StatelessWidget {
                 // _buildRecentActivity(todoProvider),
 
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 8),
+                  padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 0),
                   child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      icon: const Icon(Icons.timeline, color: Colors.white),
-                      label: const Text('Timeline'),
+                      icon: const Icon(Icons.timeline, color: Colors.white, size: 30,),
+                      label: const Text('Timeline', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
                         foregroundColor: Colors.white,
@@ -195,7 +197,7 @@ class DashboardScreen extends StatelessWidget {
             Text(
               title,
               style: const TextStyle(
-                fontSize: 12,
+                fontSize: 14,
                 color: Colors.grey,
               ),
               textAlign: TextAlign.center,
@@ -206,32 +208,9 @@ class DashboardScreen extends StatelessWidget {
     );
   }
 
-  // Widget _buildTodaysTimeline(TodoProvider todoProvider) {
-  //   return Card(
-  //     elevation: 2,
-  //     child: Padding(
-  //       padding: const EdgeInsets.all(16),
-  //     ),
-  //   );
-  // }
-
-  // Widget _stopWatch() {
-  //   return Card(
-  //     elevation: 2,
-  //     child: Padding(
-  //       padding: const EdgeInsets.all(16),
-  //       child: _StopWatchWidget(),
-  //     ),
-  //   );
-  // }
 
   Widget _buildTodayTasks(BuildContext context, TodoProvider todoProvider) {
-    final todayTodos = todoProvider.todos.where((todo) {
-      final today = DateTime.now();
-      final todoDate = DateTime(todo.createdAt.year, todo.createdAt.month, todo.createdAt.day);
-      final todayDate = DateTime(today.year, today.month, today.day);
-      return todoDate.isAtSameMomentAs(todayDate);
-    }).toList();
+    final ongoingTodos = todoProvider.todos.where((todo) => !todo.isCompleted).toList();
 
     return Card(
       elevation: 2,
@@ -245,24 +224,24 @@ class DashboardScreen extends StatelessWidget {
                 const Icon(Icons.today, color: Colors.blue),
                 const SizedBox(width: 8),
                 const Text(
-                  "Today's Tasks",
+                  "Ongoing Tasks",
                   style: TextStyle(
-                    fontSize: 18,
+                    fontSize: 20,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
                 const Spacer(),
                 Text(
-                  '${todayTodos.length} tasks',
+                  '	${ongoingTodos.length} tasks',
                   style: const TextStyle(
                     color: Colors.grey,
-                    fontSize: 14,
+                    fontSize: 18,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 12),
-            if (todayTodos.isEmpty)
+            if (ongoingTodos.isEmpty)
               const Center(
                 child: Padding(
                   padding: EdgeInsets.all(20),
@@ -276,30 +255,8 @@ class DashboardScreen extends StatelessWidget {
                 ),
               )
             else
-              ...todayTodos.take(3).map((todo) => ListTile(
-                leading: Icon(
-                  todo.isCompleted ? Icons.check_circle : Icons.radio_button_unchecked,
-                  color: todo.isCompleted ? Colors.green : Colors.grey,
-                ),
-                title: Text(
-                  todo.title,
-                  style: TextStyle(
-                    decoration: todo.isCompleted ? TextDecoration.lineThrough : null,
-                  ),
-                ),
-                subtitle: Text(
-                  DateFormat('HH:mm').format(todo.createdAt),
-                  style: const TextStyle(fontSize: 12),
-                ),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => TaskDetailScreen(todo: todo),
-                    ),
-                  );
-                },
-              )),
-            if (todayTodos.length > 3)
+              ...ongoingTodos.take(2).map((todo) => _buildTaskCard(context, todo)),
+            if (ongoingTodos.length > 2)
               Center(
                 child: TextButton(
                   onPressed: () {
@@ -307,7 +264,11 @@ class DashboardScreen extends StatelessWidget {
                       MaterialPageRoute(builder: (_) => const AllTasksScreen()),
                     );
                   },
-                  child: const Text('View All'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: Colors.white,
+                    backgroundColor: Colors.blue, // Set the button background color
+                  ),
+                  child: const Text('View All', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
                 ),
               ),
           ],
@@ -316,6 +277,201 @@ class DashboardScreen extends StatelessWidget {
       
     );
   }
+
+  Widget _buildTaskCard(BuildContext context, Todo todo) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeInOut,
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: () {
+              // Add haptic feedback
+              HapticFeedback.lightImpact();
+              
+              // Navigate with custom transition
+              Navigator.of(context).push(
+                PageRouteBuilder(
+                  pageBuilder: (context, animation, secondaryAnimation) => TaskDetailScreen(todo: todo),
+                  transitionsBuilder: (context, animation, secondaryAnimation, child) {
+                    const begin = Offset(1.0, 0.0);
+                    const end = Offset.zero;
+                    const curve = Curves.easeInOutCubic;
+                    
+                    var tween = Tween(begin: begin, end: end).chain(CurveTween(curve: curve));
+                    var offsetAnimation = animation.drive(tween);
+                    
+                    return SlideTransition(position: offsetAnimation, child: child);
+                  },
+                  transitionDuration: const Duration(milliseconds: 400),
+                ),
+              );
+            },
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.white,
+                    Colors.grey.shade50,
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: _getPriorityColor(todo.priority).withValues(alpha: 0.3),
+                  width: 1.5,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.05),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  // Priority indicator
+                  Container(
+                    width: 4,
+                    height: 50,
+                    decoration: BoxDecoration(
+                      color: _getPriorityColor(todo.priority),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  
+                  // Task content
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                todo.title,
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.black87,
+                                ),
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: _getPriorityColor(todo.priority).withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                todo.priorityText,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color: _getPriorityColor(todo.priority),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        if (todo.description != null && todo.description!.isNotEmpty) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            todo.description!,
+                            style: TextStyle(
+                              fontSize: 13,
+                              color: Colors.grey[600],
+                            ),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            Icon(
+                              Icons.access_time,
+                              size: 14,
+                              color: Colors.grey[500],
+                            ),
+                            const SizedBox(width: 4),
+                            Text(
+                              DateFormat('HH:mm').format(todo.createdAt),
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey[500],
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                            if (todo.dueDate != null) ...[
+                              const SizedBox(width: 16),
+                              Icon(
+                                Icons.calendar_today,
+                                size: 14,
+                                color: todo.isOverdue ? Colors.red : Colors.grey[500],
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                DateFormat('MMM dd').format(todo.dueDate!),
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: todo.isOverdue ? Colors.red : Colors.grey[500],
+                                  fontWeight: todo.isOverdue ? FontWeight.bold : FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  
+                  // Arrow indicator
+                  Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      color: _getPriorityColor(todo.priority).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Icon(
+                      Icons.arrow_forward_ios,
+                      size: 16,
+                      color: _getPriorityColor(todo.priority),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Color _getPriorityColor(Priority priority) {
+    switch (priority) {
+      case Priority.urgent:
+        return Colors.red;
+      case Priority.high:
+        return Colors.orange;
+      case Priority.medium:
+        return Colors.blue;
+      case Priority.low:
+        return Colors.green;
+      // default:
+      //   return Colors.grey;
+    }
+  }
+
   String _getGreeting(int hour) {
     if (hour < 12) return 'Good Morning';
     if (hour < 17) return 'Good Afternoon';
