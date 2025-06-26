@@ -137,7 +137,7 @@ class _AddTodoDialogState extends State<AddTodoDialog> {
                 Expanded(
                   child: TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    child: const Text('Cancel'),
+                    child: const Text('Cancel', style: TextStyle(fontSize: 20)),
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -147,9 +147,9 @@ class _AddTodoDialogState extends State<AddTodoDialog> {
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color.fromARGB(255, 223, 85, 197),
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: const EdgeInsets.symmetric(vertical: 8),
                     ),
-                    child: const Text('Add Task'),
+                    child: const Text('Add Task', style: TextStyle(fontSize: 20)),
                   ),
                 ),
               ],
@@ -173,7 +173,7 @@ class _AddTodoDialogState extends State<AddTodoDialog> {
         Text(
           label,
           style: const TextStyle(
-            fontSize: 16,
+            fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -201,7 +201,7 @@ class _AddTodoDialogState extends State<AddTodoDialog> {
         const Text(
           'Due Date (Optional)',
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -250,7 +250,7 @@ class _AddTodoDialogState extends State<AddTodoDialog> {
         const Text(
           'Due Time (Optional)',
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -291,13 +291,14 @@ class _AddTodoDialogState extends State<AddTodoDialog> {
   }
 
   Widget _buildPrioritySelector() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
           'Priority',
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -317,11 +318,12 @@ class _AddTodoDialogState extends State<AddTodoDialog> {
                   });
                 }
               },
-              backgroundColor: Colors.grey[200],
+              backgroundColor: isDark ? const Color.fromARGB(255, 32, 32, 32) : Colors.grey[200],
               selectedColor: priorityColor.withValues(alpha: 0.3),
               labelStyle: TextStyle(
-                color: isSelected ? priorityColor : Colors.black,
+                color: isSelected ? priorityColor : isDark ? Colors.grey[200] : Colors.black,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontSize: 17,
               ),
             );
           }).toList(),
@@ -345,6 +347,7 @@ class _AddTodoDialogState extends State<AddTodoDialog> {
 
   Widget _buildTagSelector() {
     final provider = Provider.of<TodoProvider>(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -352,12 +355,12 @@ class _AddTodoDialogState extends State<AddTodoDialog> {
         const Text(
           'Tags',
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
         ),
         const SizedBox(height: 8),
-        
+
         // Available tags
         Wrap(
           spacing: 8,
@@ -375,12 +378,14 @@ class _AddTodoDialogState extends State<AddTodoDialog> {
                   }
                 });
               },
+              selectedColor: isDark ? const Color.fromARGB(255, 151, 57, 134) : Colors.grey[200], 
+              labelStyle: const TextStyle(fontSize: 17),
             );
           }).toList(),
         ),
-        
+
         const SizedBox(height: 12),
-        
+
         // Add new tag
         Row(
           children: [
@@ -431,7 +436,7 @@ class _AddTodoDialogState extends State<AddTodoDialog> {
             const Text(
               'Recurring Task',
               style: TextStyle(
-                fontSize: 16,
+                fontSize: 20,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -445,7 +450,7 @@ class _AddTodoDialogState extends State<AddTodoDialog> {
           const Text(
             'Repeat on:',
             style: TextStyle(
-              fontSize: 14,
+              fontSize: 20,
               fontWeight: FontWeight.w600,
             ),
           ),
@@ -501,7 +506,7 @@ class _AddTodoDialogState extends State<AddTodoDialog> {
             const Text(
               'Select Days:',
               style: TextStyle(
-                fontSize: 14,
+                fontSize: 20,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -563,9 +568,27 @@ class _AddTodoDialogState extends State<AddTodoDialog> {
 
   Widget _buildDayChip(String label, int dayNumber) {
     final isSelected = _customDays.contains(dayNumber);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    const pinkColor = Color.fromARGB(255, 223, 85, 197); // Same as tag pink
+
     return ChoiceChip(
-      label: Text(label),
+      label: Text(label, style: const TextStyle(fontSize: 17)),
       selected: isSelected,
+      selectedColor: isDark ? pinkColor.withValues(alpha: 0.18) : theme.colorScheme.primary.withValues(alpha: 0.12),
+      backgroundColor: isDark ? Colors.grey[800] : null,
+      labelStyle: TextStyle(
+        color: isSelected
+            ? (isDark ? pinkColor : theme.colorScheme.primary)
+            : (isDark ? Colors.white : Colors.black),
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+      ),
+      side: isSelected
+          ? BorderSide(
+              color: isDark ? pinkColor : theme.colorScheme.primary,
+              width: 2,
+            )
+          : null,
       onSelected: (selected) {
         setState(() {
           if (selected) {

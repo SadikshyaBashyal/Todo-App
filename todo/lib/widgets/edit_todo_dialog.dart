@@ -296,13 +296,14 @@ class EditTodoDialogState extends State<EditTodoDialog> {
   }
 
   Widget _buildPrioritySelector() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
           'Priority',
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -322,11 +323,12 @@ class EditTodoDialogState extends State<EditTodoDialog> {
                   });
                 }
               },
-              backgroundColor: Colors.grey[200],
+              backgroundColor: isDark ? const Color.fromARGB(255, 32, 32, 32) : Colors.grey[200],
               selectedColor: priorityColor.withValues(alpha: 0.3),
               labelStyle: TextStyle(
-                color: isSelected ? priorityColor : Colors.black,
+                color: isSelected ? priorityColor : isDark ? Colors.grey[200] : Colors.black,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                fontSize: 17,
               ),
             );
           }).toList(),
@@ -350,13 +352,14 @@ class EditTodoDialogState extends State<EditTodoDialog> {
 
   Widget _buildTagSelector() {
     final provider = Provider.of<TodoProvider>(context);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const Text(
           'Tags',
           style: TextStyle(
-            fontSize: 16,
+            fontSize: 20,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -378,6 +381,8 @@ class EditTodoDialogState extends State<EditTodoDialog> {
                   }
                 });
               },
+              selectedColor: isDark ? const Color.fromARGB(255, 151, 57, 134) : Colors.grey[200],
+              labelStyle: const TextStyle(fontSize: 17),
             );
           }).toList(),
         ),
@@ -549,9 +554,27 @@ class EditTodoDialogState extends State<EditTodoDialog> {
 
   Widget _buildDayChip(String label, int dayNumber) {
     final isSelected = _customDays.contains(dayNumber);
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
+    const pinkColor = Color.fromARGB(255, 223, 85, 197); // Same as tag pink
+
     return ChoiceChip(
-      label: Text(label),
+      label: Text(label, style: const TextStyle(fontSize: 17)),
       selected: isSelected,
+      selectedColor: isDark ? pinkColor.withValues(alpha: 0.18) : theme.colorScheme.primary.withValues(alpha: 0.12),
+      backgroundColor: isDark ? Colors.grey[800] : null,
+      labelStyle: TextStyle(
+        color: isSelected
+            ? (isDark ? pinkColor : theme.colorScheme.primary)
+            : (isDark ? Colors.white : Colors.black),
+        fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+      ),
+      side: isSelected
+          ? BorderSide(
+              color: isDark ? pinkColor : theme.colorScheme.primary,
+              width: 2,
+            )
+          : null,
       onSelected: (selected) {
         setState(() {
           if (selected) {

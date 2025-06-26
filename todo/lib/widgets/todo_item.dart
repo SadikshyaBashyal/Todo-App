@@ -12,13 +12,14 @@ class TodoItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Card(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         side: BorderSide(
-          color: todo.isOverdue ? Colors.red : Colors.transparent,
+          color: todo.isOverdue ? Colors.red : isDark ? Colors.grey.shade200 : Colors.transparent,
           width: 2,
         ),
       ),
@@ -26,7 +27,7 @@ class TodoItem extends StatelessWidget {
         onTap: () => _showEditDialog(context),
         borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -54,14 +55,14 @@ class TodoItem extends StatelessWidget {
                               Text(
                                 todo.title,
                                 style: TextStyle(
-                                  fontSize: 18,
+                                  fontSize: 20,
                                   fontWeight: FontWeight.w600,
                                   decoration: todo.isCompleted 
                                       ? TextDecoration.lineThrough 
                                       : null,
                                   color: todo.isCompleted 
-                                      ? Colors.grey[600] 
-                                      : Colors.black,
+                                      ? isDark ? Colors.grey[200] : Colors.grey[600] 
+                                      : isDark ? Colors.grey[200] : Colors.black,
                                 ),
                               ),
                               if (todo.description != null && todo.description!.isNotEmpty) ...[
@@ -69,8 +70,8 @@ class TodoItem extends StatelessWidget {
                                 Text(
                                   todo.description!,
                                   style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[600],
+                                    fontSize: 17,
+                                    color: isDark ? Colors.grey[200] : Colors.grey[600],
                                     decoration: todo.isCompleted 
                                         ? TextDecoration.lineThrough 
                                         : null,
@@ -99,15 +100,15 @@ class TodoItem extends StatelessWidget {
                         child: Text(
                           todo.priorityText,
                           style: TextStyle(
-                            fontSize: 12,
+                            fontSize: 15,
                             fontWeight: FontWeight.bold,
                             color: todo.priorityColor,
                           ),
                         ),
                       ),
                       const SizedBox(width: 8),
-                      // Complete checkbox
-                      Column(
+                      // Complete checkbox and delete button side by side
+                      Row(
                         children: [
                           Checkbox(
                             value: todo.isCompleted,
@@ -116,6 +117,7 @@ class TodoItem extends StatelessWidget {
                                   .toggleTodo(todo.id);
                             },
                             activeColor: const Color.fromARGB(255, 223, 85, 197),
+
                           ),
                           IconButton(
                             icon: const Icon(Icons.delete, color: Colors.red),
@@ -140,14 +142,14 @@ class TodoItem extends StatelessWidget {
                   children: [
                     Icon(
                       Icons.calendar_today,
-                      size: 16,
+                      size: 20,
                       color: todo.isOverdue ? Colors.red : Colors.grey[600],
                     ),
                     const SizedBox(width: 4),
                     Text(
                       DateFormat('MMM dd, yyyy').format(todo.dueDate!),
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: 16,
                         color: todo.isOverdue ? Colors.red : Colors.grey[600],
                         fontWeight: todo.isOverdue ? FontWeight.bold : FontWeight.normal,
                       ),
@@ -156,14 +158,14 @@ class TodoItem extends StatelessWidget {
                       const SizedBox(width: 16),
                       Icon(
                         Icons.access_time,
-                        size: 16,
+                        size: 20,
                         color: todo.isOverdue ? Colors.red : Colors.grey[600],
                       ),
                       const SizedBox(width: 4),
                       Text(
                         todo.dueTime!.format(context),
                         style: TextStyle(
-                          fontSize: 14,
+                          fontSize: 16,
                           color: todo.isOverdue ? Colors.red : Colors.grey[600],
                           fontWeight: todo.isOverdue ? FontWeight.bold : FontWeight.normal,
                         ),
@@ -181,7 +183,7 @@ class TodoItem extends StatelessWidget {
                           'OVERDUE',
                           style: TextStyle(
                             color: Colors.white,
-                            fontSize: 10,
+                            fontSize: 15,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -198,19 +200,20 @@ class TodoItem extends StatelessWidget {
                   spacing: 6,
                   runSpacing: 4,
                   children: todo.tags.map((tag) {
+                    final isDark = Theme.of(context).brightness == Brightness.dark;
                     return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                       decoration: BoxDecoration(
-                        color: Colors.blue.withValues(alpha: 0.1),
+                        color: isDark ? const Color.fromARGB(255, 32, 32, 32) : Colors.blue.withValues(alpha: 0.1),
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.blue.withValues(alpha: 0.3)),
+                        border: Border.all(color: isDark ? const Color.fromARGB(255, 151, 57, 134) : Colors.blue.withValues(alpha: 0.3)),
                       ),
                       child: Text(
                         tag,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: Colors.blue,
-                          fontWeight: FontWeight.w500,
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: isDark ? Colors.blue[200] : Colors.blue,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     );
@@ -225,14 +228,14 @@ class TodoItem extends StatelessWidget {
                   children: [
                     const Icon(
                       Icons.repeat,
-                      size: 16,
+                      size: 20,
                       color: Colors.orange,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       'Recurring: ${todo.recurringText}',
                       style: const TextStyle(
-                        fontSize: 14,
+                        fontSize: 16,
                         color: Colors.orange,
                         fontWeight: FontWeight.w500,
                       ),
@@ -242,7 +245,7 @@ class TodoItem extends StatelessWidget {
                       Text(
                         'until ${DateFormat('MMM dd, yyyy').format(todo.endDate!)}',
                         style: TextStyle(
-                          fontSize: 12,
+                          fontSize: 16,
                           color: Colors.grey[600],
                         ),
                       ),
@@ -259,7 +262,7 @@ class TodoItem extends StatelessWidget {
                   Text(
                     'Created: ${DateFormat('MMM dd, yyyy').format(todo.createdAt)}',
                     style: TextStyle(
-                      fontSize: 12,
+                      fontSize: 16,
                       color: Colors.grey[500],
                     ),
                   ),
@@ -267,7 +270,7 @@ class TodoItem extends StatelessWidget {
                     Text(
                       'Completed: ${DateFormat('MMM dd, yyyy').format(todo.completedAt!)}',
                       style: TextStyle(
-                        fontSize: 12,
+                        fontSize: 16,
                         color: Colors.grey[500],
                       ),
                     ),
