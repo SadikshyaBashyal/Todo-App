@@ -227,7 +227,7 @@ class _EventDialogState extends State<EventDialog> {
                   child: Icon(
                     icon,
                     color: isSelected ? _selectedColor : Colors.grey[600],
-                    size: 20,
+                    size: 32, // Increased icon size from 20 to 32
                   ),
                 ),
               );

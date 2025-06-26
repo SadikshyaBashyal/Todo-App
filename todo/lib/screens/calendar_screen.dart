@@ -114,7 +114,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           Text(
             DateFormat('MMMM yyyy').format(_focusedDay),
             style: const TextStyle(
-              fontSize: 20,
+              fontSize: 25,
               fontWeight: FontWeight.bold,
               color: Colors.white,
             ),
@@ -140,7 +140,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
 
   Widget _buildDaysOfWeekHeaderDesktop() {
     final daysOfWeek = ['M', 'T', 'W', 'Th', 'F', 'St', 'S', 'M', 'T', 'W', 'Th', 'F', 'St', 'S'];
-
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
       child: Row(
@@ -151,8 +151,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   child: Text(
                     day,
                     style: TextStyle(
+                      fontSize: 25,
                       fontWeight: FontWeight.bold,
-                      color: (day == 'St' || day == 'S') ? Colors.red : Colors.grey[700],
+                      color: (day == 'St' || day == 'S') ? Colors.red : isDark ? Colors.grey[200] : Colors.grey[700],
                     ),
                   ),
                 ),
@@ -165,7 +166,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
   
   Widget _buildDaysOfWeekHeaderMobile() {
     final daysOfWeek = ['M', 'T', 'W', 'Th', 'F', 'St', 'S'];
-
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
       child: Row(
@@ -176,8 +177,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                   child: Text(
                     day,
                     style: TextStyle(
+                      fontSize: 20,
                       fontWeight: FontWeight.bold,
-                      color: (day == 'St' || day == 'S') ? Colors.red : Colors.grey[700],
+                      color: (day == 'St' || day == 'S') ? Colors.red : isDark ? Colors.grey[200] : Colors.grey[700],
                     ),
                   ),
                 ),
@@ -193,15 +195,15 @@ class _CalendarScreenState extends State<CalendarScreen> {
     final firstDayOfMonth = DateTime(_focusedDay.year, _focusedDay.month, 1);
     final firstWeekday = firstDayOfMonth.weekday;
     int crossAxisCount = _isMobileLayout ? 7 : 14;
-
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return GridView.count(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(16), // Increased padding
       crossAxisCount: crossAxisCount,
-      childAspectRatio: 1.5,
-      crossAxisSpacing: 10,
-      mainAxisSpacing: 10,
+      childAspectRatio: 1.1, // Make cells taller (was 1.5)
+      crossAxisSpacing: 14, // Increased spacing
+      mainAxisSpacing: 14, // Increased spacing
       children: List.generate(_isMobileLayout ? 42 : 56, (index) {
         final dayOffset = index - (firstWeekday - 1);
         final day = dayOffset + 1;
@@ -210,7 +212,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
           return Container(
             decoration: BoxDecoration(
               color: Colors.transparent,
-              borderRadius: BorderRadius.circular(4),
+              borderRadius: BorderRadius.circular(8), // Slightly rounder corners
             ),
           ); // Empty space for days outside the current month
         }
@@ -233,43 +235,43 @@ class _CalendarScreenState extends State<CalendarScreen> {
           child: Container(
             decoration: BoxDecoration(
               color: isSelected
-                  ? const Color.fromARGB(255, 30, 229, 63)
+                  ? const Color.fromARGB(255, 8, 136, 29)
                   : isToday
                       ? Colors.blue[100]
-                      : Colors.grey[300],
-              borderRadius: BorderRadius.circular(4),
+                      : isDark ? Colors.grey[800] : Colors.grey[300],
+              borderRadius: BorderRadius.circular(8), // Slightly rounder corners
               border: Border.all(
                 color: isToday ? Colors.blue[300]! : Colors.grey[500]!,
-                width: isToday ? 1.5 : 0.5,
+                width: isToday ? 2 : 0.5,
               ),
             ),
             child: Stack(
               children: [
                 Center(
-              child: Text(
-                day.toString(),
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight:
-                      isSelected || isToday ? FontWeight.bold : FontWeight.normal,
-                  color: isSelected
-                      ? Colors.white
-                      : isToday
-                          ? Colors.blue[700]
-                          : Colors.black87,
+                  child: Text(
+                    day.toString(),
+                    style: TextStyle(
+                      fontSize: 28, // Increased font size
+                      fontWeight:
+                          isSelected || isToday ? FontWeight.bold : FontWeight.normal,
+                      color: isSelected
+                          ? Colors.white
+                          : isToday
+                              ? Colors.blue[800]
+                              : isDark ? Colors.grey[200] : Colors.black87,
+                    ),
+                  ),
                 ),
-              ),
-                ),
-                // Green dot for events
+                // Red dot for events
                 if (hasEvents)
                   Positioned(
-                    top: 4,
-                    right: 4,
+                    top: 8, // Moved dot a bit further from the edge
+                    right: 8,
                     child: Container(
-                      width: 8,
-                      height: 8,
+                      width: 12, // Larger dot
+                      height: 12,
                       decoration: const BoxDecoration(
-                        color: Colors.green,
+                        color: Colors.red,
                         shape: BoxShape.circle,
                       ),
                     ),
@@ -285,11 +287,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
   Widget _buildSelectedDayEvents(TodoProvider provider) {
     final events = provider.getEventsForDay(_selectedDay);
     final completedEvents = events.where((e) => e.isCompleted).toList();
-    
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.grey[200],
+        color: isDark ? Colors.grey[800] : Colors.grey[200],
         border: Border(
           top: BorderSide(color: Colors.grey[300]!),
         ),
@@ -299,13 +301,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
         children: [
           Row(
             children: [
-              const Icon(Icons.event, color: Colors.blue),
+              const Icon(Icons.event, color: Colors.blue, size: 30),
               const SizedBox(width: 8),
               Text(
                 DateFormat('EEEE, MMMM d').format(_selectedDay),
-                style: const TextStyle(
-                  fontSize: 18,
+                style: TextStyle(
+                  fontSize: 22,
                   fontWeight: FontWeight.bold,
+                  color: isDark ? Colors.grey[200] : Colors.black87,
                 ),
               ),
               const Spacer(),
@@ -314,9 +317,9 @@ class _CalendarScreenState extends State<CalendarScreen> {
                 child: const Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.add),
+                    Icon(Icons.add, size: 25),
                     SizedBox(width: 4),
-                    Text('Add Event'),
+                    Text('Add Event', style: TextStyle(fontSize: 20)),
                   ],
                 ),
               ),
@@ -350,12 +353,13 @@ class _CalendarScreenState extends State<CalendarScreen> {
                             child: Icon(
                               event.icon,
                               color: Colors.white,
-                              size: 16,
+                              size: 25,
                             ),
                           ),
                           title: Text(
                             event.title,
                             style: theme.textTheme.titleMedium?.copyWith(
+                              fontSize: 22,
                               decoration: event.isCompleted 
                                   ? TextDecoration.lineThrough 
                                   : null,
@@ -369,12 +373,14 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                 Text(
                                   event.description,
                                   style: theme.textTheme.bodyMedium?.copyWith(
+                                    fontSize: 18,
                                     color: isDark ? Colors.white70 : Colors.black87,
                                   ),
                                 ),
                               Text(
                                 event.timeString,
                                 style: theme.textTheme.bodySmall?.copyWith(
+                                  fontSize: 18,
                                   color: isDark ? Colors.white54 : Colors.grey[700],
                                 ),
                               ),
@@ -383,7 +389,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                   event.recurringString,
                                   style: theme.textTheme.bodySmall?.copyWith(
                                     color: isDark ? Colors.purple[200] : Colors.purple,
-                                    fontSize: 12,
+                                    fontSize: 18,
                                   ),
                                 ),
                             ],
@@ -393,6 +399,7 @@ class _CalendarScreenState extends State<CalendarScreen> {
                             children: [
                               IconButton(
                                 icon: Icon(
+                                  size: 30,
                                   event.isCompleted 
                                       ? Icons.check_circle 
                                       : Icons.check_circle_outline,
@@ -403,11 +410,11 @@ class _CalendarScreenState extends State<CalendarScreen> {
                                 },
                               ),
                               IconButton(
-                                icon: const Icon(Icons.edit, color: Colors.blue),
+                                icon: const Icon(Icons.edit, color: Colors.blue, size: 30),
                                 onPressed: () => _showEditEventDialog(context, event),
                               ),
                               IconButton(
-                                icon: const Icon(Icons.delete, color: Colors.red),
+                                icon: const Icon(Icons.delete, color: Colors.red, size: 30),
                                 onPressed: () => _showDeleteEventDialog(context, event),
                               ),
                             ],
