@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/todo_provider.dart';
+import '../providers/theme_provider.dart';
 import '../models/user.dart';
 import 'lichal_front_page.dart';
 import '../helpers/image_helper.dart';
@@ -16,7 +17,6 @@ class SettingsScreen extends StatefulWidget {
 
 class _SettingsScreenState extends State<SettingsScreen> {
   bool _notificationsEnabled = true;
-  bool _darkModeEnabled = false;
   bool _autoBackupEnabled = true;
   String _selectedTimeFormat = '12-hour';
   String _selectedDateFormat = 'MM/DD/YYYY';
@@ -52,8 +52,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
       //     ],
       //   ),
       // ),
-      body: Consumer<TodoProvider>(
-        builder: (context, provider, child) {
+      body: Consumer2<TodoProvider, ThemeProvider>(
+        builder: (context, provider, themeProvider, child) {
           final currentUser = provider.users.firstWhere(
             (user) => user.username == provider.currentUsername,
             orElse: () => AppUser(username: 'unknown', password: '', name: 'Unknown User'),
@@ -69,7 +69,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 _buildDateTimeSettings(),
                 
                 // App Preferences
-                _buildAppPreferences(),
+                _buildAppPreferences(themeProvider),
                 
                 // Data & Backup
                 _buildDataBackup(),
@@ -238,7 +238,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildAppPreferences() {
+  Widget _buildAppPreferences(ThemeProvider themeProvider) {
     return Card(
       margin: const EdgeInsets.all(16),
       child: Column(
@@ -261,15 +261,16 @@ class _SettingsScreenState extends State<SettingsScreen> {
             ),
           ),
           ListTile(
-            leading: const Icon(Icons.dark_mode),
+            leading: Icon(
+              themeProvider.isDarkMode ? Icons.light_mode : Icons.dark_mode,
+              color: themeProvider.isDarkMode ? Colors.amber : Colors.indigo,
+            ),
             title: const Text('Dark Mode'),
-            subtitle: const Text('Use dark theme'),
+            subtitle: Text(themeProvider.isDarkMode ? 'Dark theme enabled' : 'Light theme enabled'),
             trailing: Switch(
-              value: _darkModeEnabled,
-              onChanged: (value) {
-                setState(() {
-                  _darkModeEnabled = value;
-                });
+              value: themeProvider.isDarkMode,
+              onChanged: (value) async {
+                await themeProvider.setDarkMode(value);
               },
             ),
           ),

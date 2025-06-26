@@ -280,7 +280,7 @@ class DashboardScreen extends StatelessWidget {
 
   Widget _buildTaskCard(BuildContext context, Todo todo) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 6),
+      padding: const EdgeInsets.symmetric(vertical:10),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -338,8 +338,8 @@ class DashboardScreen extends StatelessWidget {
                 children: [
                   // Priority indicator
                   Container(
-                    width: 4,
-                    height: 50,
+                    width: 5,
+                    height: 70,
                     decoration: BoxDecoration(
                       color: _getPriorityColor(todo.priority),
                       borderRadius: BorderRadius.circular(2),
@@ -358,7 +358,7 @@ class DashboardScreen extends StatelessWidget {
                               child: Text(
                                 todo.title,
                                 style: const TextStyle(
-                                  fontSize: 16,
+                                  fontSize: 22,
                                   fontWeight: FontWeight.w600,
                                   color: Colors.black87,
                                 ),
@@ -375,7 +375,7 @@ class DashboardScreen extends StatelessWidget {
                               child: Text(
                                 todo.priorityText,
                                 style: TextStyle(
-                                  fontSize: 11,
+                                  fontSize: 15,
                                   fontWeight: FontWeight.bold,
                                   color: _getPriorityColor(todo.priority),
                                 ),
@@ -388,7 +388,7 @@ class DashboardScreen extends StatelessWidget {
                           Text(
                             todo.description!,
                             style: TextStyle(
-                              fontSize: 13,
+                              fontSize: 17,
                               color: Colors.grey[600],
                             ),
                             maxLines: 1,
@@ -400,14 +400,14 @@ class DashboardScreen extends StatelessWidget {
                           children: [
                             Icon(
                               Icons.access_time,
-                              size: 14,
+                              size: 25,
                               color: Colors.grey[500],
                             ),
                             const SizedBox(width: 4),
                             Text(
                               DateFormat('HH:mm').format(todo.createdAt),
                               style: TextStyle(
-                                fontSize: 12,
+                                fontSize: 18,
                                 color: Colors.grey[500],
                                 fontWeight: FontWeight.w500,
                               ),
@@ -416,14 +416,14 @@ class DashboardScreen extends StatelessWidget {
                               const SizedBox(width: 16),
                               Icon(
                                 Icons.calendar_today,
-                                size: 14,
+                                size: 25,
                                 color: todo.isOverdue ? Colors.red : Colors.grey[500],
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 DateFormat('MMM dd').format(todo.dueDate!),
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 18,
                                   color: todo.isOverdue ? Colors.red : Colors.grey[500],
                                   fontWeight: todo.isOverdue ? FontWeight.bold : FontWeight.w500,
                                 ),
@@ -444,7 +444,7 @@ class DashboardScreen extends StatelessWidget {
                     ),
                     child: Icon(
                       Icons.arrow_forward_ios,
-                      size: 16,
+                      size: 25,
                       color: _getPriorityColor(todo.priority),
                     ),
                   ),
