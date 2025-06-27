@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/todo.dart';
 import '../models/user.dart';
 import '../models/event.dart';
+import '../services/notification_service.dart';
 //  import 'package:firebase_auth/firebase_auth.dart';
 // import 'package:cloud_firestore/cloud_firestore.dart';
 
@@ -21,6 +22,9 @@ class TodoProvider with ChangeNotifier {
 
   // Calendar events support
   List<CalendarEvent> _events = [];
+
+  // Notification service
+  final NotificationService _notificationService = NotificationService();
 
   // For Firebase (commented out)
   // final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -77,6 +81,11 @@ class TodoProvider with ChangeNotifier {
   TodoProvider() {
     _loadUsers();
     _loadCurrentUser();
+    _initializeNotificationService();
+  }
+
+  Future<void> _initializeNotificationService() async {
+    await _notificationService.initialize();
   }
 
   Future<void> _loadUsers() async {
@@ -183,19 +192,33 @@ class TodoProvider with ChangeNotifier {
   Future<void> addEvent(CalendarEvent event) async {
     _events.add(event);
     await _saveEvents();
+    
+    // Schedule notifications for the new event
+    await _notificationService.scheduleEventNotifications(event);
+    
     notifyListeners();
   }
 
   Future<void> updateEvent(CalendarEvent event) async {
     final index = _events.indexWhere((e) => e.id == event.id);
     if (index != -1) {
+      // Cancel existing notifications for this event
+      await _notificationService.cancelEventNotifications(event.id);
+      
       _events[index] = event;
       await _saveEvents();
+      
+      // Schedule new notifications for the updated event
+      await _notificationService.scheduleEventNotifications(event);
+      
       notifyListeners();
     }
   }
 
   Future<void> deleteEvent(String eventId) async {
+    // Cancel notifications for this event
+    await _notificationService.cancelEventNotifications(eventId);
+    
     _events.removeWhere((event) => event.id == eventId);
     await _saveEvents();
     notifyListeners();
@@ -291,12 +314,19 @@ class TodoProvider with ChangeNotifier {
     
     await _saveTodos();
     await _saveTags();
+    
+    // Schedule notifications for the new todo
+    await _notificationService.scheduleTaskNotifications(todo);
+    
     notifyListeners();
   }
 
   Future<void> updateTodo(Todo todo) async {
     final index = _todos.indexWhere((t) => t.id == todo.id);
     if (index != -1) {
+      // Cancel existing notifications for this todo
+      await _notificationService.cancelTaskNotifications(todo.id);
+      
       _todos[index] = todo;
       
       // Add new tags to available tags
@@ -308,11 +338,18 @@ class TodoProvider with ChangeNotifier {
       
       await _saveTodos();
       await _saveTags();
+      
+      // Schedule new notifications for the updated todo
+      await _notificationService.scheduleTaskNotifications(todo);
+      
       notifyListeners();
     }
   }
 
   Future<void> deleteTodo(String id) async {
+    // Cancel notifications for this todo
+    await _notificationService.cancelTaskNotifications(id);
+    
     _todos.removeWhere((todo) => todo.id == id);
     await _saveTodos();
     notifyListeners();
@@ -323,6 +360,15 @@ class TodoProvider with ChangeNotifier {
     if (index != -1) {
       _todos[index].isCompleted = !_todos[index].isCompleted;
       _todos[index].completedAt = _todos[index].isCompleted ? DateTime.now() : null;
+      
+      // If todo is completed, cancel its notifications
+      if (_todos[index].isCompleted) {
+        await _notificationService.cancelTaskNotifications(id);
+      } else {
+        // If todo is uncompleted, reschedule its notifications
+        await _notificationService.scheduleTaskNotifications(_todos[index]);
+      }
+      
       await _saveTodos();
       notifyListeners();
     }
@@ -393,5 +439,66 @@ class TodoProvider with ChangeNotifier {
     );
     await _saveEvents();
     notifyListeners();
+  }
+
+  // Method to reschedule all notifications (useful when app starts or settings change)
+  Future<void> rescheduleAllNotifications() async {
+    await _notificationService.scheduleAllNotifications(_events, _todos);
+  }
+
+  Future<void> updateUserPhoto(String photoPath) async {
+    if (_currentUsername == null) return;
+    final index = _users.indexWhere((u) => u.username == _currentUsername);
+    if (index != -1) {
+      final user = _users[index];
+      _users[index] = AppUser(
+        username: user.username,
+        password: user.password,
+        name: user.name,
+        photoPath: photoPath,
+      );
+      await _saveUsers();
+      notifyListeners();
+    }
+  }
+
+  Future<String?> updateUsername(String newUsername) async {
+    if (_currentUsername == null) return 'No user logged in';
+    if (_users.any((u) => u.username == newUsername)) {
+      return 'Username already exists';
+    }
+    final index = _users.indexWhere((u) => u.username == _currentUsername);
+    if (index != -1) {
+      final user = _users[index];
+      _users[index] = AppUser(
+        username: newUsername,
+        password: user.password,
+        name: user.name,
+        photoPath: user.photoPath,
+      );
+      _currentUsername = newUsername;
+      await _saveUsers();
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString('currentUser', newUsername);
+      notifyListeners();
+      return null;
+    }
+    return 'User not found';
+  }
+
+  Future<void> updatePassword(String newPassword) async {
+    if (_currentUsername == null) return;
+    final index = _users.indexWhere((u) => u.username == _currentUsername);
+    if (index != -1) {
+      final user = _users[index];
+      _users[index] = AppUser(
+        username: user.username,
+        password: newPassword,
+        name: user.name,
+        photoPath: user.photoPath,
+      );
+      await _saveUsers();
+      notifyListeners();
+    }
   }
 } 

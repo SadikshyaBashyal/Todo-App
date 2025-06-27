@@ -5,11 +5,16 @@ import 'screens/lichal_front_page.dart';
 import 'widgets/main_navigation.dart';
 import 'providers/todo_provider.dart';
 import 'providers/theme_provider.dart';
+import 'services/notification_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
+  // Initialize notification service
+  final notificationService = NotificationService();
+  await notificationService.initialize();
 
   runApp(const MyApp());
 }
@@ -57,6 +62,14 @@ class _AuthWrapperState extends State<AuthWrapper> {
   Future<void> _checkAuthStatus() async {
     // Give the TodoProvider time to load users
     await Future.delayed(const Duration(milliseconds: 100));
+    
+    // Reschedule notifications if user is logged in
+    if (!mounted) return;
+    final todoProvider = Provider.of<TodoProvider>(context, listen: false);
+    if (todoProvider.currentUsername != null) {
+      await todoProvider.rescheduleAllNotifications();
+    }
+    
     setState(() {
       _isLoading = false;
     });
