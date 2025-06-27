@@ -4,9 +4,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/todo.dart';
 import '../models/user.dart';
 import '../models/event.dart';
-import '../services/notification_service.dart';
-//  import 'package:firebase_auth/firebase_auth.dart';
-// import 'package:cloud_firestore/cloud_firestore.dart';
 
 
 class TodoProvider with ChangeNotifier {
@@ -22,13 +19,6 @@ class TodoProvider with ChangeNotifier {
 
   // Calendar events support
   List<CalendarEvent> _events = [];
-
-  // Notification service
-  final NotificationService _notificationService = NotificationService();
-
-  // For Firebase (commented out)
-  // final FirebaseAuth _auth = FirebaseAuth.instance;
-  // final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   List<Todo> get todos => _todos;
   List<String> get availableTags => _availableTags;
@@ -81,11 +71,6 @@ class TodoProvider with ChangeNotifier {
   TodoProvider() {
     _loadUsers();
     _loadCurrentUser();
-    _initializeNotificationService();
-  }
-
-  Future<void> _initializeNotificationService() async {
-    await _notificationService.initialize();
   }
 
   Future<void> _loadUsers() async {
@@ -193,32 +178,20 @@ class TodoProvider with ChangeNotifier {
     _events.add(event);
     await _saveEvents();
     
-    // Schedule notifications for the new event
-    await _notificationService.scheduleEventNotifications(event);
-    
     notifyListeners();
   }
 
   Future<void> updateEvent(CalendarEvent event) async {
     final index = _events.indexWhere((e) => e.id == event.id);
     if (index != -1) {
-      // Cancel existing notifications for this event
-      await _notificationService.cancelEventNotifications(event.id);
-      
       _events[index] = event;
       await _saveEvents();
-      
-      // Schedule new notifications for the updated event
-      await _notificationService.scheduleEventNotifications(event);
       
       notifyListeners();
     }
   }
 
   Future<void> deleteEvent(String eventId) async {
-    // Cancel notifications for this event
-    await _notificationService.cancelEventNotifications(eventId);
-    
     _events.removeWhere((event) => event.id == eventId);
     await _saveEvents();
     notifyListeners();
@@ -260,26 +233,6 @@ class TodoProvider with ChangeNotifier {
     return _events.where((event) => !event.isCompleted).toList();
   }
 
-  // --- Firebase logic (commented out) ---
-  // Future<void> loadTodosFromFirebase() async {
-  //   final user = _auth.currentUser;
-  //   if (user == null) return;
-  //   final snapshot = await _firestore.collection('todos').doc(user.uid).get();
-  //   if (snapshot.exists) {
-  //     final todosData = snapshot.data()?['todos'] as List<dynamic>;
-  //     _todos = todosData.map((json) => Todo.fromJson(json)).toList();
-  //     notifyListeners();
-  //   }
-  // }
-  //
-  // Future<void> saveTodosToFirebase() async {
-  //   final user = _auth.currentUser;
-  //   if (user == null) return;
-  //   await _firestore.collection('todos').doc(user.uid).set({
-  //     'todos': _todos.map((todo) => todo.toJson()).toList(),
-  //   });
-  // }
-
   void setFilter(String filter) {
     _filter = filter;
     notifyListeners();
@@ -304,52 +257,32 @@ class TodoProvider with ChangeNotifier {
 
   Future<void> addTodo(Todo todo) async {
     _todos.add(todo);
-    
-    // Add new tags to available tags
     for (String tag in todo.tags) {
       if (!_availableTags.contains(tag)) {
         _availableTags.add(tag);
       }
     }
-    
     await _saveTodos();
     await _saveTags();
-    
-    // Schedule notifications for the new todo
-    await _notificationService.scheduleTaskNotifications(todo);
-    
     notifyListeners();
   }
 
   Future<void> updateTodo(Todo todo) async {
     final index = _todos.indexWhere((t) => t.id == todo.id);
     if (index != -1) {
-      // Cancel existing notifications for this todo
-      await _notificationService.cancelTaskNotifications(todo.id);
-      
       _todos[index] = todo;
-      
-      // Add new tags to available tags
       for (String tag in todo.tags) {
         if (!_availableTags.contains(tag)) {
           _availableTags.add(tag);
         }
       }
-      
       await _saveTodos();
       await _saveTags();
-      
-      // Schedule new notifications for the updated todo
-      await _notificationService.scheduleTaskNotifications(todo);
-      
       notifyListeners();
     }
   }
 
   Future<void> deleteTodo(String id) async {
-    // Cancel notifications for this todo
-    await _notificationService.cancelTaskNotifications(id);
-    
     _todos.removeWhere((todo) => todo.id == id);
     await _saveTodos();
     notifyListeners();
@@ -360,15 +293,6 @@ class TodoProvider with ChangeNotifier {
     if (index != -1) {
       _todos[index].isCompleted = !_todos[index].isCompleted;
       _todos[index].completedAt = _todos[index].isCompleted ? DateTime.now() : null;
-      
-      // If todo is completed, cancel its notifications
-      if (_todos[index].isCompleted) {
-        await _notificationService.cancelTaskNotifications(id);
-      } else {
-        // If todo is uncompleted, reschedule its notifications
-        await _notificationService.scheduleTaskNotifications(_todos[index]);
-      }
-      
       await _saveTodos();
       notifyListeners();
     }
@@ -443,7 +367,7 @@ class TodoProvider with ChangeNotifier {
 
   // Method to reschedule all notifications (useful when app starts or settings change)
   Future<void> rescheduleAllNotifications() async {
-    await _notificationService.scheduleAllNotifications(_events, _todos);
+    // NotificationService.scheduleAllNotifications(_events, _todos);
   }
 
   Future<void> updateUserPhoto(String photoPath) async {

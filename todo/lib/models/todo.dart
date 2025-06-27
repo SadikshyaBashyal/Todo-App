@@ -205,4 +205,4 @@ class Todo {
     return dueDate!.isAfter(weekStart.subtract(const Duration(days: 1))) &&
            dueDate!.isBefore(weekEnd.add(const Duration(days: 1)));
   }
-} 
+}

@@ -3,7 +3,6 @@ import 'package:provider/provider.dart';
 import '../providers/todo_provider.dart';
 import '../providers/theme_provider.dart';
 import '../models/user.dart';
-import '../services/notification_service.dart';
 import 'lichal_front_page.dart';
 import '../helpers/image_helper.dart';
 import '../styles/app_styles.dart';
@@ -22,33 +21,17 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool _notificationsEnabled = true;
-  bool _eventNotificationsEnabled = true;
-  bool _taskNotificationsEnabled = true;
-  bool _dailyReminderEnabled = true;
-  TimeOfDay _dailyReminderTime = const TimeOfDay(hour: 21, minute: 0); // 9:00 PM
+
   String _selectedDateFormat = 'MM/DD/YYYY';
   String _selectedLanguage = 'English';
   
-  late NotificationService _notificationService;
   
   @override
   void initState() {
     super.initState();
-    _notificationService = NotificationService();
-    _loadNotificationSettings();
   }
 
-  Future<void> _loadNotificationSettings() async {
-    await _notificationService.initialize();
-    setState(() {
-      _notificationsEnabled = _notificationService.notificationsEnabled;
-      _eventNotificationsEnabled = _notificationService.eventNotificationsEnabled;
-      _taskNotificationsEnabled = _notificationService.taskNotificationsEnabled;
-      _dailyReminderEnabled = _notificationService.dailyReminderEnabled;
-      _dailyReminderTime = _notificationService.dailyReminderTime;
-    });
-  }
+
 
   Future<void> _logout() async {
     final provider = Provider.of<TodoProvider>(context, listen: false);
@@ -87,9 +70,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               children: [
                 // Profile Section
                 _buildProfileSection(currentUser, provider),
-                
-                // Notification Settings
-                _buildNotificationSettings(),
                 
                 // App Preferences
                 _buildAppPreferences(themeProvider),
@@ -164,119 +144,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildNotificationSettings() {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Icon(Icons.notifications_active, color: Colors.orange),
-                SizedBox(width: 12),
-                Text(
-                  'Notification Settings',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.notifications),
-            title: const Text('Enable Notifications'),
-            subtitle: const Text('Master switch for all notifications'),
-            trailing: Switch(
-              value: _notificationsEnabled,
-              onChanged: (value) async {
-                setState(() {
-                  _notificationsEnabled = value;
-                });
-                await _notificationService.setNotificationsEnabled(value);
-              },
-            ),
-          ),
-          if (_notificationsEnabled) ...[
-            ListTile(
-              leading: const Icon(Icons.event),
-              title: const Text('Event Notifications'),
-              subtitle: const Text('Reminders for calendar events'),
-              trailing: Switch(
-                value: _eventNotificationsEnabled,
-                onChanged: (value) async {
-                  setState(() {
-                    _eventNotificationsEnabled = value;
-                  });
-                  await _notificationService.setEventNotificationsEnabled(value);
-                },
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.task),
-              title: const Text('Task Notifications'),
-              subtitle: const Text('Reminders for todo tasks'),
-              trailing: Switch(
-                value: _taskNotificationsEnabled,
-                onChanged: (value) async {
-                  setState(() {
-                    _taskNotificationsEnabled = value;
-                  });
-                  await _notificationService.setTaskNotificationsEnabled(value);
-                },
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.schedule),
-              title: const Text('Daily Reminder'),
-              subtitle: Text('Daily reminder at ${_formatTimeOfDay(_dailyReminderTime)}'),
-              trailing: Switch(
-                value: _dailyReminderEnabled,
-                onChanged: (value) async {
-                  setState(() {
-                    _dailyReminderEnabled = value;
-                  });
-                  await _notificationService.setDailyReminderEnabled(value);
-                },
-              ),
-            ),
-            if (_dailyReminderEnabled)
-              ListTile(
-                leading: const Icon(Icons.access_time),
-                title: const Text('Daily Reminder Time'),
-                subtitle: Text(_formatTimeOfDay(_dailyReminderTime)),
-                trailing: const Icon(Icons.arrow_forward_ios),
-                onTap: () => _showDailyReminderTimeDialog(),
-              ),
-          ],
-        ],
-      ),
-    );
-  }
-
-  String _formatTimeOfDay(TimeOfDay time) {
-    final hour = time.hourOfPeriod;
-    final minute = time.minute.toString().padLeft(2, '0');
-    final period = time.period == DayPeriod.am ? 'AM' : 'PM';
-    return '$hour:$minute $period';
-  }
-
-  void _showDailyReminderTimeDialog() async {
-    final TimeOfDay? picked = await showTimePicker(
-      context: context,
-      initialTime: _dailyReminderTime,
-    );
-    
-    if (picked != null) {
-      setState(() {
-        _dailyReminderTime = picked;
-      });
-      await _notificationService.setDailyReminderTime(picked);
-    }
-  }
 
   Widget _buildProfileImage(AppUser user) {
     return ImageHelper.buildImageWidget(
@@ -536,12 +403,11 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 await prefs.remove('todos_$username');
                 await prefs.remove('tags_$username');
                 await prefs.remove('events_$username');
-                await prefs.remove('routines_$username');
-                await prefs.remove('routine_last_reset_$username');
+                // await prefs.remove('routines_$username');
+                // await prefs.remove('routine_last_reset_$username');
               }
               await provider.refreshUsers();
               await provider.setCurrentUser(username ?? '');
-              await NotificationService().cancelAllNotifications();
               if (!context.mounted) return;
               Navigator.of(context).pop();
               

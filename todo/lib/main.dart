@@ -5,7 +5,7 @@ import 'screens/lichal_front_page.dart';
 import 'widgets/main_navigation.dart';
 import 'providers/todo_provider.dart';
 import 'providers/theme_provider.dart';
-import 'services/notification_service.dart';
+
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,20 +13,24 @@ void main() async {
   await SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
 
   // Initialize notification service
-  final notificationService = NotificationService();
-  await notificationService.initialize();
 
-  runApp(const MyApp());
+
+  // Initialize TodoProvider and ensure notification service is ready
+  final todoProvider = TodoProvider();
+
+
+  runApp(MyApp(todoProvider: todoProvider));
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+  final TodoProvider todoProvider;
+  const MyApp({super.key, required this.todoProvider});
 
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [
-        ChangeNotifierProvider(create: (context) => TodoProvider()),
+        ChangeNotifierProvider<TodoProvider>.value(value: todoProvider),
         ChangeNotifierProvider(create: (context) => ThemeProvider()),
       ],
       child: Consumer<ThemeProvider>(

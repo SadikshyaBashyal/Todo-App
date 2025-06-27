@@ -621,10 +621,12 @@ class _AddTodoDialogState extends State<AddTodoDialog> {
       );
 
       Provider.of<TodoProvider>(context, listen: false).addTodo(todo);
-      Navigator.of(context).pop();
-      
-      // Show success message at top
       _showTopNotification(context, 'Task created successfully!');
+      Future.delayed(Duration.zero, () {
+        if (mounted) {
+          Navigator.of(context).pop();
+        }
+      });
     }
   }
 
