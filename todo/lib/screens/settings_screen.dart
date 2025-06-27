@@ -11,17 +11,8 @@ import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:typed_data';
-import 'package:share_plus/share_plus.dart';
-import 'package:path_provider/path_provider.dart';
-// import 'package:pdf/pdf.dart';
-import 'package:pdf/widgets.dart' as pw;
-// import 'package:printing/printing.dart';
-// import 'package:flutter/rendering.dart';
 import 'package:url_launcher/url_launcher.dart';
-// import 'dart:convert';  
 import 'package:shared_preferences/shared_preferences.dart';
-// import 'package:flutter_local_notifications/flutter_local_notifications.dart';
-// import 'package:intl/intl.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -100,14 +91,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 // Notification Settings
                 _buildNotificationSettings(),
                 
-                // Date & Time Settings
-                _buildDateTimeSettings(),
-                
                 // App Preferences
                 _buildAppPreferences(themeProvider),
-                
-                // Data & Backup
-                _buildDataBackup(),
                 
                 // About & Support
                 _buildAboutSupport(),
@@ -329,47 +314,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     );
   }
 
-  Widget _buildDateTimeSettings() {
-    return Card(
-      margin: const EdgeInsets.all(16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Icon(Icons.access_time, color: Colors.blue),
-                SizedBox(width: 12),
-                Text(
-                  'Date & Time Settings',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.calendar_today),
-            title: const Text('Date Format'),
-            subtitle: Text(_selectedDateFormat),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () => _showDateFormatDialog(),
-          ),
-          ListTile(
-            leading: const Icon(Icons.language),
-            title: const Text('Language'),
-            subtitle: Text(_selectedLanguage),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () => _showLanguageDialog(),
-          ),
-        ],
-      ),
-    );
-  }
-
   Widget _buildAppPreferences(ThemeProvider themeProvider) {
     return Card(
       margin: const EdgeInsets.all(16),
@@ -406,118 +350,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
               },
             ),
           ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDataBackup() {
-    return Card(
-      margin: const EdgeInsets.symmetric(horizontal: 16),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Padding(
-            padding: EdgeInsets.all(16),
-            child: Row(
-              children: [
-                Icon(Icons.backup, color: Colors.orange),
-                SizedBox(width: 12),
-                Text(
-                  'Backup and Data',
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ],
-            ),
+           ListTile(
+            leading: const Icon(Icons.calendar_today),
+            title: const Text('Date Format'),
+            subtitle: Text(_selectedDateFormat),
+            trailing: const Icon(Icons.arrow_forward_ios),
+            onTap: () => _showDateFormatDialog(),
           ),
           ListTile(
-            leading: const Icon(Icons.download),
-            title: const Text('Export Data'),
-            subtitle: const Text('Export tasks as PDF'),
+            leading: const Icon(Icons.language),
+            title: const Text('Language'),
+            subtitle: Text(_selectedLanguage),
             trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () async {
-              // Try to export data as PDF
-              try {
-                final provider = Provider.of<TodoProvider>(context, listen: false);
-                final todos = provider.todos;
-                final events = provider.events;
-
-                // Dynamically import pdf and printing packages if available
-                // If not, show a message that export is not available
-                try {
-                  // Import these at the top of your file:
-                  // import 'package:pdf/widgets.dart' as pw;
-                  // import 'package:printing/printing.dart';
-                  // import 'package:path_provider/path_provider.dart';
-                  // import 'dart:io';
-
-                  final pdf = pw.Document();
-
-                  pdf.addPage(
-                    pw.MultiPage(
-                      build: (pw.Context context) => [
-                        pw.Header(level: 0, child: pw.Text('Day Care App Data Export')),
-                        pw.SizedBox(height: 10),
-                        pw.Text('Tasks:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                        ...todos.isEmpty
-                            ? [pw.Text('No tasks found.')]
-                            : todos.map((t) => pw.Bullet(text: t.title)).toList(),
-                        pw.SizedBox(height: 20),
-                        pw.Text('Events:', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
-                        ...events.isEmpty
-                            ? [pw.Text('No events found.')]
-                            : events.map((e) => pw.Bullet(text: e.title)).toList(),
-                      ],
-                    ),
-                  );
-
-                  Directory? dir;
-                  try {
-                    dir = await getTemporaryDirectory();
-                  } catch (e) {
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Export failed: path_provider not available. Add it to pubspec.yaml.')),
-                    );
-                    return;
-                  }
-
-                  final file = File('${dir.path}/daycare_export.pdf');
-                  await file.writeAsBytes(await pdf.save());
-
-                  try {
-                    await Share.shareXFiles([XFile(file.path)], text: 'Day Care App Data Export (PDF)');
-                  } catch (e) {
-                    if (!mounted) return;
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Export failed: share_plus not available. Add it to pubspec.yaml.')),
-                    );
-                  }
-                } catch (e) {
-                  if (!mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('PDF export not available. Please add "pdf" and "printing" packages to pubspec.yaml.'),
-                    ),
-                  );
-                }
-              } catch (e) {
-                if (!mounted) return;
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Export failed: $e')),
-                );
-              }
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.delete_forever, color: Colors.red),
-            title: const Text('Clear All Data'),
-            subtitle: const Text('Delete all tasks and settings'),
-            trailing: const Icon(Icons.arrow_forward_ios),
-            onTap: () => _showClearDataDialog(),
+            onTap: () => _showLanguageDialog(),
           ),
         ],
       ),
@@ -605,6 +450,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
             title: const Text('Change Password', style: TextStyle(color: Colors.red)),
             trailing: const Icon(Icons.arrow_forward_ios, color: Colors.red),
             onTap: () => _showChangePasswordDialog(user),
+          ),
+          ListTile(
+            leading: const Icon(Icons.delete_forever, color: Colors.red),
+            title: const Text('Clear All Data', style: TextStyle(color: Colors.red)),
+            subtitle: const Text('Delete all tasks and settings', style: TextStyle(color: Colors.red)),
+            trailing: const Icon(Icons.arrow_forward_ios, color: Colors.red),
+            onTap: () => _showClearDataDialog(),
           ),
         ],
       ),
@@ -976,4 +828,4 @@ class _SettingsScreenState extends State<SettingsScreen> {
       },
     );
   }
-} 
+}
