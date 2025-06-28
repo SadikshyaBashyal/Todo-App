@@ -20,17 +20,24 @@ jobs:
           flutter-version: '3.19.0'
           channel: 'stable'
           
+      - name: Navigate to Flutter project
+        run: cd todo
+          
       - name: Get dependencies
-        run: flutter pub get
+        run: |
+          cd todo
+          flutter pub get
         
       - name: Build web
-        run: flutter build web --release
+        run: |
+          cd todo
+          flutter build web --release
         
       - name: Deploy to GitHub Pages
         if: github.ref == 'refs/heads/main'
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./build/web
+          publish_dir: ./todo/build/web
           publish_branch: gh-pages
           force_orphan: true 
