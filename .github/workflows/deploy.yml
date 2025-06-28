@@ -31,7 +31,7 @@ jobs:
       - name: Build web
         run: |
           cd todo
-          flutter build web --release
+          flutter build web --release --no-tree-shake-icons
         
       - name: Deploy to GitHub Pages
         if: github.ref == 'refs/heads/main'
