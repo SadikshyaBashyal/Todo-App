@@ -41,13 +41,69 @@
   <script src="flutter.js" defer></script>
 </head>
 <body>
+  <div id="loading">
+    <style>
+      body {
+        inset: 0;
+        overflow: hidden;
+        margin: 0;
+        padding: 0;
+        position: fixed;
+      }
+      #loading {
+        align-items: center;
+        display: flex;
+        height: 100%;
+        justify-content: center;
+        width: 100%;
+      }
+      #loading img {
+        animation: 1s ease-in-out 0s infinite alternate breathe;
+        opacity: 0.66;
+        transition: opacity 0.4s;
+      }
+      #loading.main_done img {
+        opacity: 1;
+      }
+      @keyframes breathe {
+        from {
+          transform: scale(1)
+        }
+        to {
+          transform: scale(0.95)
+        }
+      }
+    </style>
+    <img src="icons/Icon-192.png" alt="Loading indicator..." />
+  </div>
   <script>
+    console.log('Page loaded, starting Flutter initialization...');
     window.addEventListener('load', function(ev) {
+      console.log('Window load event fired');
       // Download main.dart.js
+      var loading = document.querySelector('#loading');
+      console.log('Loading element found:', loading);
+      
       _flutter.loader.load({
         serviceWorker: {
           serviceWorkerVersion: serviceWorkerVersion,
         }
+      }).then(function(engineInitializer) {
+        console.log('Flutter loader completed, initializing engine...');
+        loading.classList.add('main_done');
+        return engineInitializer.initializeEngine();
+      }).then(function(appRunner) {
+        console.log('Engine initialized, running app...');
+        loading.classList.remove('main_done');
+        return appRunner.runApp();
+      }).then(function(app) {
+        console.log('App started successfully!');
+        window.addEventListener('beforeunload', function() {
+          appRunner.closeApp();
+        });
+      }).catch(function(error) {
+        console.error('Error loading Flutter app:', error);
+        loading.innerHTML = '<p>Error loading app. Please refresh the page.</p>';
       });
     });
   </script>
