@@ -239,7 +239,7 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
             trailing: SizedBox(
               width: MediaQuery.of(context).size.width * 0.3,
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.end,
                 children: [
                   SizedBox(
                     width: 18,
@@ -256,32 +256,30 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                   ),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        icon: const Icon(Icons.edit, color: Colors.blue, size: 18),
-                        onPressed: () {
-                          _showRoutineDialog(routine: routine, editIndex: index);
-                        },
-                        tooltip: 'Edit',
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
-                      ),
-                      const SizedBox(width: 0),
-                      IconButton(
-                        icon: const Icon(Icons.delete, color: Colors.red, size: 18),
-                        onPressed: () async {
-                          setState(() {
-                            _routines.removeAt(index);
-                          });
-                          await _saveRoutines();
-                        },
-                        tooltip: 'Delete',
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
-                      ),
-                    ],
+                  SizedBox(width: MediaQuery.of(context).size.width > 600 ? 25 : 0),
+                  IconButton(
+                    icon: const Icon(Icons.edit, color: Colors.blue, size: 18),
+                    onPressed: () {
+                      _showRoutineDialog(routine: routine, editIndex: index);
+                    },
+                    tooltip: 'Edit',
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                  ),
+                  SizedBox(
+                    width: MediaQuery.of(context).size.width > 600 ? 25 : 0,
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red, size: 18),
+                    onPressed: () async {
+                      setState(() {
+                        _routines.removeAt(index);
+                      });
+                      await _saveRoutines();
+                    },
+                    tooltip: 'Delete',
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
                   ),
                 ],
               ),
