@@ -40,7 +40,7 @@ jobs:
       - name: Build web
         run: |
           cd todo
-          flutter build web --release --no-tree-shake-icons
+          flutter build web --release --no-tree-shake-icons --base-href "/Todo-App/"
         
       - name: Setup Pages
         uses: actions/configure-pages@v4
