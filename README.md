@@ -389,6 +389,24 @@ git push -u origin main
 # - Folder: / (root)
 ```
 
+#### Automatic Deployment with GitHub Actions
+The project includes a GitHub Actions workflow for automatic deployment:
+
+1. **Workflow File**: `.github/workflows/deploy.yml`
+2. **Trigger**: Automatically runs on push to `main` branch
+3. **Deployment Branch**: `gh-pages`
+4. **Setup**:
+   - Push your code to the `main` branch
+   - Go to repository Settings > Pages
+   - Source: Deploy from a branch
+   - Branch: `gh-pages`
+   - Folder: `/ (root)`
+
+The workflow will:
+- Build the Flutter web app
+- Deploy to `gh-pages` branch
+- Make app available at: `https://sadikshyabashyal.github.io/Todo-App`
+
 ### Desktop Deployment
 ```bash
 # Windows
