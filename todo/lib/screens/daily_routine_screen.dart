@@ -49,7 +49,6 @@ class DailyRoutineScreen extends StatefulWidget {
 class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
   List<Routine> _routines = [];
   String? _currentUsername;
-  // DateTime _lastResetDate = DateTime.now();
 
   @override
   void initState() {
@@ -103,32 +102,14 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
-      // appBar: AppBar(
-      //   title: const Row(
-      //     mainAxisSize: MainAxisSize.min,
-      //     children: [
-      //       Icon(Icons.schedule, size: 28),
-      //     ],
-      //   ),
-      //   actions: [
-      //     IconButton(
-      //       icon: const Icon(Icons.add),
-      //       onPressed: () {
-      //         _showAddRoutineDialog(context);
-      //       },
-      //     ),
-      //   ],
-      // ),
+
       body: SingleChildScrollView(
         // backgroundColor: isDark ? const Color(0xFF121212) : Colors.white,
         child: Column(
         children: [
           // Today's Date
           _buildDateHeader(),
-          
-          // Progress Summary
-            // _buildProgressSummary(),
-          
+
           // Routine List
             _buildRoutineList(isDark),
           ],
@@ -140,7 +121,7 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
   Widget _buildDateHeader() {
     final now = DateTime.now();
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(10),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [Colors.purple[400]!, Colors.purple[600]!],
@@ -148,7 +129,7 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
       ),
       child: Row(
         children: [
-          const Icon(Icons.calendar_today, color: Colors.white, size: 24),
+          const Icon(Icons.calendar_today, color: Colors.white, size: 20),
           const SizedBox(width: 12),
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -157,7 +138,7 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
                 DateFormat('EEEE, MMMM d').format(now),
                 style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 20,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -165,12 +146,12 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
           ),
         const Spacer(),
         ElevatedButton.icon(
-          icon: const Icon(Icons.add, color: Colors.white, size: 24),
-          label: const Text('Add', style: TextStyle(color: Colors.white, fontSize: 20)),
+          icon: const Icon(Icons.add, color: Colors.white, size: 20),
+          label: const Text('Add', style: TextStyle(color: Colors.white, fontSize: 16)),
           style: ElevatedButton.styleFrom(
             backgroundColor: Colors.purple[700],
             foregroundColor: Colors.white,
-            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 10),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 0),
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(24),
             ),
@@ -187,7 +168,7 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
 
   Widget _buildRoutineList(bool isDark) {
     return ListView.builder(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(10),
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       itemCount: _routines.length,
@@ -197,7 +178,7 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
         final isCurrentTime = _isCurrentTimeSlot(routine.time);
 
         return Card(
-          margin: const EdgeInsets.only(bottom: 12),
+          margin: const EdgeInsets.only(bottom: 10),
           elevation: isCurrentTime ? 4 : 2,
           color: isCurrentTime ? Colors.blue[50] : null,
           shape: isDark
@@ -222,12 +203,13 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
               child: Icon(
                 routine.icon,
                 color: isDark ? Colors.grey[200] : Colors.white,
-                size: 25,
+                size: 20,
               ),
             ),
             title: Text(
               routine.title,
               style: TextStyle(
+                fontSize: 16,
                 fontWeight: FontWeight.w600,
                 decoration: isCompleted ? TextDecoration.lineThrough : null,
                 color: isDark ? Colors.white : Colors.black87,
@@ -240,6 +222,7 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
                   '${routine.time} • ${routine.duration}',
                   style: TextStyle(
                     color: isDark ? Colors.grey[200] : isCompleted ? Colors.grey : Colors.grey[600],
+                    fontSize: 14,
                   ),
                 ),
                 if (isCurrentTime)
@@ -250,48 +233,58 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
                       color: Colors.blue[100],
                       borderRadius: BorderRadius.circular(12),
                     ),
-                    child: Text(
-                      'Current',
-                      style: TextStyle(
-                        color: Colors.blue[700],
-                        fontSize: 12,
-                        fontWeight: FontWeight.w500,
-                      ),
-                    ),
                   ),
               ],
             ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Checkbox(
-              value: isCompleted,
-              onChanged: (value) async {
-                setState(() {
-                  routine.completed = value!;
-                });
-                await _saveRoutines();
-              },
-              activeColor: routine.color,
-                ),
-                IconButton(
-                  icon: const Icon(Icons.edit, color: Colors.blue),
-                  onPressed: () {
-                    _showRoutineDialog(routine: routine, editIndex: index);
-                  },
-                  tooltip: 'Edit',
-                ),
-                IconButton(
-                  icon: const Icon(Icons.delete, color: Colors.red),
-                  onPressed: () async {
-                    setState(() {
-                      _routines.removeAt(index);
-                    });
-                    await _saveRoutines();
-                  },
-                  tooltip: 'Delete',
-                ),
-              ],
+            trailing: SizedBox(
+              width: MediaQuery.of(context).size.width * 0.3,
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: Checkbox(
+                      value: isCompleted,
+                      onChanged: (value) async {
+                        setState(() {
+                          routine.completed = value!;
+                        });
+                        await _saveRoutines();
+                      },
+                      activeColor: routine.color,
+                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.edit, color: Colors.blue, size: 18),
+                        onPressed: () {
+                          _showRoutineDialog(routine: routine, editIndex: index);
+                        },
+                        tooltip: 'Edit',
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                      ),
+                      const SizedBox(width: 0),
+                      IconButton(
+                        icon: const Icon(Icons.delete, color: Colors.red, size: 18),
+                        onPressed: () async {
+                          setState(() {
+                            _routines.removeAt(index);
+                          });
+                          await _saveRoutines();
+                        },
+                        tooltip: 'Delete',
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(minWidth: 18, minHeight: 18),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
             ),
             onTap: () {
               _showRoutineDetails(context, routine);
@@ -709,54 +702,4 @@ class _DailyRoutineScreenState extends State<DailyRoutineScreen> {
       }
     }
   }
-
-  // Widget _buildProgressSummary() {
-  //   final completedCount = _routines.where((routine) => routine['completed']).length;
-  //   final totalCount = _routines.length;
-  //   final progress = totalCount > 0 ? completedCount / totalCount : 0.0;
-
-  //   return Container(
-  //     padding: const EdgeInsets.all(16),
-  //     child: Card(
-  //       elevation: 4,
-  //       child: Padding(
-  //         padding: const EdgeInsets.all(16),
-  //         child: Column(
-  //           children: [
-  //             Row(
-  //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-  //               children: [
-  //                 Text(
-  //                   '$completedCount/$totalCount completed',
-  //                   style: TextStyle(
-  //                     fontSize: 16,
-  //                     color: Colors.grey[600],
-  //                   ),
-  //                 ),
-  //               ],
-  //             ),
-  //             const SizedBox(height: 12),
-  //             LinearProgressIndicator(
-  //               value: progress,
-  //               backgroundColor: Colors.grey[300],
-  //               valueColor: AlwaysStoppedAnimation<Color>(
-  //                 progress >= 1.0 ? Colors.green : Colors.purple[400]!,
-  //               ),
-  //               minHeight: 8,
-  //             ),
-  //             const SizedBox(height: 8),
-  //             Text(
-  //               '${(progress * 100).toInt()}% Complete',
-  //               style: TextStyle(
-  //                 fontSize: 14,
-  //                 color: Colors.grey[600],
-  //                 fontWeight: FontWeight.w500,
-  //               ),
-  //             ),
-  //           ],
-  //         ),
-  //       ),
-  //     ),
-  //   );
-  // }
 }

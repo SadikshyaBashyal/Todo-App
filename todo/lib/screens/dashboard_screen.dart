@@ -31,13 +31,13 @@ class DashboardScreen extends StatelessWidget {
               children: [
                 // Welcome Section
                 _buildWelcomeCard(),
-                const SizedBox(height: 20),
+                const SizedBox(height: 5),
                 
                 Padding(
                   padding: const EdgeInsets.all(5),
                   child: _buildStatsRow(todoProvider),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 5),
                 
                 // Stop Watch
                 // _stopWatch(),
@@ -45,7 +45,7 @@ class DashboardScreen extends StatelessWidget {
 
                 // Today's Tasks
                 _buildTodayTasks(context, todoProvider),
-                const SizedBox(height: 20),
+                const SizedBox(height: 5),
                 
                 // Quick Actions
                 // _buildQuickActions(context),
@@ -59,12 +59,12 @@ class DashboardScreen extends StatelessWidget {
                   child: SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
-                      icon: const Icon(Icons.timeline, color: Colors.white, size: 30,),
-                      label: const Text('Timeline', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),),
+                      icon: const Icon(Icons.timeline, color: Colors.white, size: 25,),
+                      label: const Text('Timeline', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold),),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.green,
                         foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        padding: const EdgeInsets.symmetric(vertical: 10),
                       ),
                       onPressed: () {
                         Navigator.of(context).push(
@@ -155,7 +155,7 @@ class DashboardScreen extends StatelessWidget {
             Colors.orange,
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 10),
         Expanded(
           child: _buildStatCard(
             'Completed',
@@ -164,7 +164,7 @@ class DashboardScreen extends StatelessWidget {
             Colors.green,
           ),
         ),
-        const SizedBox(width: 12),
+        const SizedBox(width: 10),
         Expanded(
           child: _buildStatCard(
             'Total',
@@ -197,7 +197,7 @@ class DashboardScreen extends StatelessWidget {
             Text(
               title,
               style: const TextStyle(
-                fontSize: 14,
+                fontSize: 13,
                 color: Colors.grey,
               ),
               textAlign: TextAlign.center,
@@ -282,7 +282,7 @@ class DashboardScreen extends StatelessWidget {
     final theme = Theme.of(context);
     final isDark = theme.brightness == Brightness.dark;
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical:10),
+      padding: const EdgeInsets.symmetric(vertical:8),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
         curve: Curves.easeInOut,
@@ -308,7 +308,7 @@ class DashboardScreen extends StatelessWidget {
             },
             borderRadius: BorderRadius.circular(16),
             child: Container(
-              padding: const EdgeInsets.all(16),
+              padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
                 color: theme.cardColor,
                 borderRadius: BorderRadius.circular(16),
@@ -345,7 +345,7 @@ class DashboardScreen extends StatelessWidget {
                               child: Text(
                                 todo.title,
                                 style: theme.textTheme.titleLarge?.copyWith(
-                                  fontSize: 22,
+                                  fontSize: 18,
                                   fontWeight: FontWeight.w600,
                                 ),
                                 maxLines: 2,
@@ -361,7 +361,7 @@ class DashboardScreen extends StatelessWidget {
                               child: Text(
                                 todo.priorityText,
                                 style: TextStyle(
-                                  fontSize: 15,
+                                  fontSize: 13,
                                   fontWeight: FontWeight.bold,
                                   color: _getPriorityColor(todo.priority),
                                 ),
@@ -374,7 +374,7 @@ class DashboardScreen extends StatelessWidget {
                           Text(
                             todo.description!,
                             style: theme.textTheme.bodyMedium?.copyWith(
-                              fontSize: 17,
+                              fontSize: 15,
                               color: isDark ? Colors.white70 : Colors.grey[600],
                             ),
                             maxLines: 1,
@@ -386,14 +386,14 @@ class DashboardScreen extends StatelessWidget {
                           children: [
                             Icon(
                               Icons.access_time,
-                              size: 20,
+                              size: 18,
                               color: isDark ? Colors.white54 : Colors.grey[500],
                             ),
                             const SizedBox(width: 4),
                             Text(
                               DateFormat('HH:mm').format(todo.createdAt),
                               style: theme.textTheme.bodySmall?.copyWith(
-                                fontSize: 18,
+                                fontSize: 16,
                                 color: isDark ? Colors.white54 : Colors.grey[500],
                                 fontWeight: FontWeight.w500,
                               ),
@@ -402,14 +402,14 @@ class DashboardScreen extends StatelessWidget {
                               const SizedBox(width: 16),
                               Icon(
                                 Icons.calendar_today,
-                                size: 20,
+                                size: 18,
                                 color: todo.isOverdue ? Colors.red : (isDark ? Colors.white54 : Colors.grey[500]),
                               ),
                               const SizedBox(width: 4),
                               Text(
                                 DateFormat('MMM dd').format(todo.dueDate!),
                                 style: theme.textTheme.bodySmall?.copyWith(
-                                  fontSize: 18,
+                                  fontSize: 16,
                                   color: todo.isOverdue ? Colors.red : (isDark ? Colors.white54 : Colors.grey[500]),
                                   fontWeight: todo.isOverdue ? FontWeight.bold : FontWeight.w500,
                                 ),
@@ -462,310 +462,3 @@ class DashboardScreen extends StatelessWidget {
     return 'Good Evening';
   }
 }
-
-class _StopWatchWidget extends StatefulWidget {
-  @override
-  State<_StopWatchWidget> createState() => _StopWatchWidgetState();
-}
-
-class _StopWatchWidgetState extends State<_StopWatchWidget> {
-  late Stopwatch _stopwatch;
-  late Duration _elapsed;
-  late Ticker _ticker;
-  bool _isRunning = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _stopwatch = Stopwatch();
-    _elapsed = Duration.zero;
-    _ticker = Ticker(_onTick);
-  }
-
-  void _onTick(Duration _) {
-    if (_stopwatch.isRunning) {
-      setState(() {
-        _elapsed = _stopwatch.elapsed;
-      });
-    }
-  }
-
-  @override
-  void dispose() {
-    _ticker.dispose();
-    super.dispose();
-  }
-
-  void _start() {
-    _stopwatch.start();
-    _ticker.start();
-    setState(() {
-      _isRunning = true;
-    });
-  }
-
-  void _stop() {
-    _stopwatch.stop();
-    _ticker.stop();
-    setState(() {
-      _isRunning = false;
-    });
-  }
-
-  void _reset() {
-    _stopwatch.reset();
-    setState(() {
-      _elapsed = Duration.zero;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final hours = twoDigits(_elapsed.inHours);
-    final minutes = twoDigits(_elapsed.inMinutes.remainder(60));
-    final seconds = twoDigits(_elapsed.inSeconds.remainder(60));
-    final milliseconds = (_elapsed.inMilliseconds.remainder(1000) ~/ 10).toString().padLeft(2, '0');
-
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const Text('Stop Watch', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-        const SizedBox(height: 16),
-        Text(
-          '$hours:$minutes:$seconds.$milliseconds',
-          style: const TextStyle(fontSize: 32, fontWeight: FontWeight.bold, letterSpacing: 2),
-        ),
-        const SizedBox(height: 16),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            ElevatedButton(
-              onPressed: _isRunning ? null : _start,
-              child: const Text('Start'),
-            ),
-            const SizedBox(width: 12),
-            ElevatedButton(
-              onPressed: _isRunning ? _stop : null,
-              child: const Text('Stop'),
-            ),
-            const SizedBox(width: 12),
-            ElevatedButton(
-              onPressed: _reset,
-              child: const Text('Reset'),
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
-class Ticker {
-  final void Function(Duration) onTick;
-  late final Stopwatch _internalStopwatch;
-  late final Duration _interval;
-  bool _isActive = false;
-
-  Ticker(this.onTick, {Duration interval = const Duration(milliseconds: 30)}) {
-    _internalStopwatch = Stopwatch();
-    _interval = interval;
-  }
-
-  void start() {
-    if (_isActive) return;
-    _isActive = true;
-    _internalStopwatch.start();
-    _tick();
-  }
-
-  void stop() {
-    _isActive = false;
-    _internalStopwatch.stop();
-  }
-
-  void dispose() {
-    _isActive = false;
-  }
-
-  void _tick() async {
-    while (_isActive) {
-      await Future.delayed(_interval);
-      if (_isActive) {
-        onTick(_internalStopwatch.elapsed);
-      }
-    }
-  }
-} 
-  // Widget _buildQuickActions(BuildContext context) {
-  //   return Card(
-  //     elevation: 2,
-  //     child: Padding(
-  //       padding: const EdgeInsets.all(16),
-  //       child: Column(
-  //         crossAxisAlignment: CrossAxisAlignment.start,
-  //         children: [
-  //           const Row(
-  //             children: [
-  //               Icon(Icons.flash_on, color: Colors.orange),
-  //               SizedBox(width: 8),
-  //               Text(
-  //                 'Quick Actions',
-  //                 style: TextStyle(
-  //                   fontSize: 18,
-  //                   fontWeight: FontWeight.bold,
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //           const SizedBox(height: 16),
-  //           Row(
-  //             children: [
-  //               Expanded(
-  //                 child: _buildActionButton(
-  //                   'Add Task',
-  //                   Icons.add_task,
-  //                   Colors.blue,
-  //                   () {
-  //                     // Navigate to add task
-  //                   },
-  //                 ),
-  //               ),
-  //               const SizedBox(width: 12),
-  //               Expanded(
-  //                 child: _buildActionButton(
-  //                   'View Calendar',
-  //                   Icons.calendar_month,
-  //                   Colors.green,
-  //                   () {
-  //                     // Navigate to calendar
-  //                   },
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //           const SizedBox(height: 12),
-  //           Row(
-  //             children: [
-  //               Expanded(
-  //                 child: _buildActionButton(
-  //                   'Daily Routine',
-  //                   Icons.schedule,
-  //                   Colors.purple,
-  //                   () {
-  //                     // Navigate to routine
-  //                   },
-  //                 ),
-  //               ),
-  //               const SizedBox(width: 12),
-  //               Expanded(
-  //                 child: _buildActionButton(
-  //                   'Settings',
-  //                   Icons.settings,
-  //                   Colors.grey,
-  //                   () {
-  //                     // Navigate to settings
-  //                   },
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
-
-  // Widget _buildActionButton(String title, IconData icon, Color color, VoidCallback onTap) {
-  //   return InkWell(
-  //     onTap: onTap,
-  //     borderRadius: BorderRadius.circular(8),
-  //     child: Container(
-  //       padding: const EdgeInsets.all(16),
-  //       decoration: BoxDecoration(
-  //         border: Border.all(color: color.withValues(alpha: 0.3)),
-  //         borderRadius: BorderRadius.circular(8),
-  //       ),
-  //       child: Column(
-  //         children: [
-  //           Icon(icon, color: color, size: 24),
-  //           const SizedBox(height: 8),
-  //           Text(
-  //             title,
-  //             style: TextStyle(
-  //               color: color,
-  //               fontSize: 12,
-  //               fontWeight: FontWeight.w500,
-  //             ),
-  //             textAlign: TextAlign.center,
-  //           ),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
-
-  // Widget _buildRecentActivity(TodoProvider todoProvider) {
-  //   final recentTodos = todoProvider.todos.take(5).toList();
-    
-  //   return Card(
-  //     elevation: 2,
-  //     child: Padding(
-  //       padding: const EdgeInsets.all(16),
-  //       child: Column(
-  //         crossAxisAlignment: CrossAxisAlignment.start,
-  //         children: [
-  //           const Row(
-  //             children: [
-  //               Icon(Icons.history, color: Colors.blue),
-  //               SizedBox(width: 8),
-  //               Text(
-  //                 'Recent Activity',
-  //                 style: TextStyle(
-  //                   fontSize: 18,
-  //                   fontWeight: FontWeight.bold,
-  //                 ),
-  //               ),
-  //             ],
-  //           ),
-  //           const SizedBox(height: 12),
-  //           if (recentTodos.isEmpty)
-  //             const Center(
-  //               child: Padding(
-  //                 padding: EdgeInsets.all(20),
-  //                 child: Text(
-  //                   'No recent activity',
-  //                   style: TextStyle(
-  //                     color: Colors.grey,
-  //                     fontSize: 16,
-  //                   ),
-  //                 ),
-  //               ),
-  //             )
-  //           else
-  //             ...recentTodos.map((todo) => ListTile(
-  //               leading: CircleAvatar(
-  //                 backgroundColor: todo.isCompleted ? Colors.green : Colors.blue,
-  //                 child: Icon(
-  //                   todo.isCompleted ? Icons.check : Icons.schedule,
-  //                   color: Colors.white,
-  //                   size: 16,
-  //                 ),
-  //               ),
-  //               title: Text(
-  //                 todo.title,
-  //                 style: TextStyle(
-  //                   decoration: todo.isCompleted ? TextDecoration.lineThrough : null,
-  //                 ),
-  //               ),
-  //               subtitle: Text(
-  //                 DateFormat('MMM dd, HH:mm').format(todo.createdAt),
-  //                 style: const TextStyle(fontSize: 12),
-  //               ),
-  //             )),
-  //         ],
-  //       ),
-  //     ),
-  //   );
-  // }
-

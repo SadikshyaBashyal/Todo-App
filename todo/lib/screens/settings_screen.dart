@@ -89,9 +89,9 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildProfileSection(AppUser user, TodoProvider provider) {
     return Card(
-      margin: const EdgeInsets.all(20),
+      margin: const EdgeInsets.all(12),
       child: Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.all(12),
         child: Column(
           children: [
             CircleAvatar(
@@ -183,12 +183,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildAppPreferences(ThemeProvider themeProvider) {
     return Card(
-      margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.all(10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Padding(
-            padding: EdgeInsets.all(16),
+            padding: EdgeInsets.all(10),
             child: Row(
               children: [
                 Icon(Icons.tune, color: Colors.green),
@@ -238,12 +238,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildAboutSupport() {
     return Card(
-      margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.all(10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Padding(
-            padding: EdgeInsets.all(16),
+            padding: EdgeInsets.all(10),
             child: Row(
               children: [
                 Icon(Icons.info, color: Colors.purple),
@@ -279,12 +279,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
 
   Widget _buildDangerZone(AppUser user) {
     return Card(  
-      margin: const EdgeInsets.all(16),
+      margin: const EdgeInsets.all(10),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Padding(
-            padding: EdgeInsets.all(16),
+            padding: EdgeInsets.all(10),
             child: Row(
               children: [
                 Icon(Icons.warning, color: Colors.red),

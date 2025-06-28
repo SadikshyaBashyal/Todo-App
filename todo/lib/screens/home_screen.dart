@@ -50,7 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
-      padding: const EdgeInsets.all(5),
+      padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
         color: isDark ? const Color.fromARGB(255, 10, 10, 10) : const Color.fromARGB(255, 253, 253, 253),
         boxShadow: [
@@ -64,20 +64,6 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Column(
         children: [
-          // Title and add button
-          // Row(
-          //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          //   children: [
-          //     IconButton(
-          //       onPressed: () => _showAddTodoDialog(context),
-          //       icon: const Icon(Icons.add_task),
-          //       style: IconButton.styleFrom(
-          //         backgroundColor: const Color.fromARGB(255, 223, 85, 197),
-          //         foregroundColor: Colors.white,
-          //       ),
-          //     ),
-          //   ],
-          // ),
           
           const SizedBox(height: 8),
           
@@ -92,7 +78,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Colors.blue,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Expanded(
                 child: _buildStatCard(
                   'Completed',
@@ -101,7 +87,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Colors.green,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Expanded(
                 child: _buildStatCard(
                   'Today',
@@ -110,7 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Colors.orange,
                 ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 8),
               Expanded(
                 child: _buildStatCard(
                   'Overdue',
@@ -136,12 +122,12 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       child: Column(
         children: [
-          Icon(icon, color: color, size: 40),
+          Icon(icon, color: color, size: 30),
           const SizedBox(height: 12),
           Text(
             value,
             style: TextStyle(
-              fontSize: 20,
+              fontSize: 18,
               fontWeight: FontWeight.bold,
               color: color,
             ),
@@ -149,7 +135,7 @@ class _HomeScreenState extends State<HomeScreen> {
           Text(
             label,
             style: TextStyle(
-              fontSize: Theme.of(context).platform == TargetPlatform.android || Theme.of(context).platform == TargetPlatform.iOS ? 18 : 24,
+              fontSize: Theme.of(context).platform == TargetPlatform.android || Theme.of(context).platform == TargetPlatform.iOS ? 14 : 24,
               color: color.withValues(alpha: 1),
               fontWeight: FontWeight.w600,
             ),
@@ -175,7 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const Spacer(),
                 TextButton(
                   onPressed: () => todoProvider.clearFilters(),
-                  child: const Text('Clear', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w600)),
+                  child: const Text('Clear', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600)),
                 ),
               ],
             ),
@@ -245,7 +231,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final isSelected = currentFilter == value;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return FilterChip(
-      label: Text(label, style: const TextStyle(fontSize: 18)),
+      label: Text(label, style: const TextStyle(fontSize: 15)),
       selected: isSelected,
       onSelected: (selected) {
         Provider.of<TodoProvider>(context, listen: false).setFilter(value);
@@ -255,7 +241,7 @@ class _HomeScreenState extends State<HomeScreen> {
       labelStyle: TextStyle(
         color: isSelected ? const Color.fromARGB(255, 223, 85, 197) : Colors.black,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        fontSize: 18,
+        fontSize: 15,
       ),
     );
   }
@@ -264,8 +250,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final isSelected = selectedPriority == priority;
     final priorityColor = _getPriorityColor(priority);
     return FilterChip(
-      label: Text(label, style: const TextStyle(fontSize: 18)),
-      selected: isSelected,
+      label: Text(label, style: const TextStyle(fontSize: 15)),
+      selected: isSelected, 
       onSelected: (selected) {
         Provider.of<TodoProvider>(context, listen: false)
             .setPriorityFilter(selected ? priority : null);
@@ -275,7 +261,7 @@ class _HomeScreenState extends State<HomeScreen> {
       labelStyle: TextStyle(
         color: priorityColor,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        fontSize: 18,
+        fontSize: 15,
       ),
     );
   }
@@ -297,7 +283,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final isSelected = selectedTag == tag;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     return FilterChip(
-      label: Text(tag, style: const TextStyle(fontSize: 18)),
+      label: Text(tag, style: const TextStyle(fontSize: 15)),
       selected: isSelected,
       onSelected: (selected) {
         Provider.of<TodoProvider>(context, listen: false)
@@ -308,7 +294,7 @@ class _HomeScreenState extends State<HomeScreen> {
       labelStyle: TextStyle(
         color: isDark ? Colors.blue[200] : Colors.blue,
         fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-        fontSize: 18,
+        fontSize: 15,
       ),
       side: isSelected
           ? BorderSide(
@@ -333,8 +319,8 @@ class _HomeScreenState extends State<HomeScreen> {
               final provider = Provider.of<TodoProvider>(context, listen: false);
               await provider.deleteAllCompletedTodos();
             },
-            icon: const Icon(Icons.delete_forever, color: Colors.white, size: 32),
-            label: const Text('Delete All Completed', style: TextStyle(color: Colors.white, fontSize: 20)),
+            icon: const Icon(Icons.delete_forever, color: Colors.white, size: 28),
+            label: const Text('Delete All Completed', style: TextStyle(color: Colors.white, fontSize: 18)),
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,
               foregroundColor: Colors.white,
@@ -357,14 +343,14 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Icon(
               Icons.task_alt,
-              size: 120,
+              size: 90,
               color: Colors.grey[400],
             ),
             const SizedBox(height: 24),
             Text(
               'No tasks found',
               style: TextStyle(
-                fontSize: 28,
+                fontSize: 20,
                 fontWeight: FontWeight.w600,
                 color: Colors.grey[600],
               ),
@@ -373,15 +359,15 @@ class _HomeScreenState extends State<HomeScreen> {
             Text(
               'Add a new task to get started',
               style: TextStyle(
-                fontSize: 20,
+                fontSize: 16,
                 color: Colors.grey[500],
               ),
             ),
             const SizedBox(height: 32),
             ElevatedButton.icon(
               onPressed: () => _showAddTodoDialog(context),
-              icon: const Icon(Icons.add_task, size: 32),
-              label: const Text('Add Task', style: TextStyle(fontSize: 20)),
+              icon: const Icon(Icons.add_task, size: 28),
+              label: const Text('Add Task', style: TextStyle(fontSize: 16)),
               style: ElevatedButton.styleFrom(
                 backgroundColor: const Color.fromARGB(255, 223, 85, 197),
                 foregroundColor: Colors.white,
@@ -401,10 +387,4 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  // void _navigateToLogin() {
-  //   Navigator.of(context).pushAndRemoveUntil(
-  //     MaterialPageRoute(builder: (_) => const LoginScreen()),
-  //     (route) => false,
-  //   );
-  // }
 } 

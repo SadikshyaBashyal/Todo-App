@@ -82,7 +82,7 @@ class _MainNavigationState extends State<MainNavigation> {
               style: TextStyle(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
-                fontSize: 25,
+                fontSize: 20,
               ),
             ),
           ],
@@ -106,21 +106,21 @@ class _MainNavigationState extends State<MainNavigation> {
                   color: Colors.white,
                   size: 20,
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: 2),
                 Text(
                   _is24HourFormat 
                       ? DateFormat('HH:mm:ss').format(_currentTime)
                       : DateFormat('hh:mm:ss a').format(_currentTime),
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 20,
+                    fontSize: 16,
                     fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
             ),
           ),
-          const SizedBox(width: 8),
+          const SizedBox(width: 4),
           // Format Toggle Button
           PopupMenuButton<String>(
             icon: const Icon(Icons.more_vert, color: Colors.white),
@@ -142,7 +142,7 @@ class _MainNavigationState extends State<MainNavigation> {
                       size: 18,
                       color: Colors.blue,
                     ),
-                    const SizedBox(width: 8),
+                    const SizedBox(width: 4),
                     Text(_is24HourFormat ? 'Switch to 12h' : 'Switch to 24h'),
                   ],
                 ),
@@ -171,8 +171,8 @@ class _MainNavigationState extends State<MainNavigation> {
         unselectedItemColor: isDark ? Colors.white : const Color.fromARGB(255, 94, 93, 93),
         backgroundColor: isDark ? const Color(0xFF222222) : Colors.white,
         elevation: 8,
-        selectedLabelStyle: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-        unselectedLabelStyle: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+        selectedLabelStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+        unselectedLabelStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
         items: const [
           BottomNavigationBarItem(
             icon: Icon(Icons.dashboard, size: 32),
