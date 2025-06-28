@@ -5,7 +5,7 @@
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A modern todo application built with Flutter",
+    "description": "A modern day care application built with Flutter",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

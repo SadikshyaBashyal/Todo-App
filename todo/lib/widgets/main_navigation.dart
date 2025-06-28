@@ -180,7 +180,7 @@ class _MainNavigationState extends State<MainNavigation> {
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.task_alt, size: 32),
-            label: 'Todo',
+            label: 'Day Care',
           ),
           BottomNavigationBarItem(
             icon: Icon(Icons.calendar_month, size: 32),

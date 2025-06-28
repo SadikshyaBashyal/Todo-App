@@ -1,5 +1,5 @@
-name: todo_app
-description: A modern todo application built with Flutter
+name: day_care_app
+description: A modern day care application built with Flutter
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -35,9 +35,9 @@ flutter:
 flutter_launcher_icons:
   android: "launcher_icon"
   ios: true
-  image_path: "assets/icon/clock-icon.png"
+  image_path: "assets/icon/time-management.png"
   min_sdk_android: 21
   windows:
     generate: true
-    image_path: "assets/icon/clock-icon.png"
+    image_path: "assets/icon/time-management.png"
     icon_size: 48 
