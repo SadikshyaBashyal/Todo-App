@@ -11,9 +11,8 @@ This project is focused on android and desktop application development. Please c
 0. [Screenshots](#screenshots)
 1. [Initial Setup](#initial-setup)
 2. [Installation Guide](#installation-guide)
-3. [Project Structure](#project-structure)
-4. [Features Overview](#features-overview)
-5. [Deployment](#deployment)
+3. [Features Overview](#features-overview)
+4. [Deployment](#deployment)
 
 ## How I made it
 
@@ -156,60 +155,6 @@ flutter run -d windows
 flutter emulators -d
 flutter emulators --lanuch Medium_Phone_API_36.0
 flutter run --debug
-```
-
-## Project Structure
-
-```
-Todo-App/
-├── todo/                          # Main Flutter project
-│   ├── lib/                       # Source code directory
-│   │   ├── main.dart             # Application entry point
-│   │   ├── models/               # Data models
-│   │   │   ├── todo.dart         # Todo item model
-│   │   │   ├── event.dart        # Calendar event model
-│   │   │   └── user.dart         # User model
-│   │   ├── providers/            # State management
-│   │   │   ├── todo_provider.dart # Main state provider
-│   │   │   └── theme_provider.dart # Theme management
-│   │   ├── screens/              # UI screens
-│   │   │   ├── lichal_front_page.dart # Landing page
-│   │   │   ├── login_screen.dart # Login interface
-│   │   │   ├── signup_screen.dart # Registration interface
-│   │   │   ├── home_screen.dart  # Main dashboard
-│   │   │   ├── dashboard_screen.dart # Task overview
-│   │   │   ├── all_tasks_screen.dart # All tasks view
-│   │   │   ├── calendar_screen.dart # Calendar view
-│   │   │   ├── daily_routine_screen.dart # Daily routine
-│   │   │   ├── timeline_screen.dart # Timeline view
-│   │   │   ├── task_detail_screen.dart # Task details
-│   │   │   └── settings_screen.dart # Settings
-│   │   ├── widgets/              # Reusable UI components
-│   │   │   ├── main_navigation.dart # Navigation bar
-│   │   │   ├── add_todo_dialog.dart # Add task dialog
-│   │   │   ├── edit_todo_dialog.dart # Edit task dialog
-│   │   │   ├── todo_item.dart    # Individual task item
-│   │   │   ├── event_dialog.dart # Event management dialog
-│   │   │   └── auth_widgets.dart # Authentication widgets
-│   │   ├── utils/                # Utility functions
-│   │   │   └── auth_utils.dart   # Authentication utilities
-│   │   ├── helpers/              # Helper functions
-│   │   │   └── image_helper.dart # Image handling
-│   │   └── styles/               # App styling
-│   │       └── app_styles.dart   # Theme and styles
-│   ├── assets/                   # Static assets
-│   │   └── icon/                 # App icons
-│   ├── android/                  # Android-specific code
-│   ├── ios/                      # iOS-specific code
-│   ├── web/                      # Web-specific code
-│   ├── windows/                  # Windows-specific code
-│   ├── macos/                    # macOS-specific code
-│   ├── linux/                    # Linux-specific code
-│   └── pubspec.yaml             # Dependencies and configuration
-├── images/                       # Documentation images
-├── app-release.apk              # Android release build
-├── desktop-application.zip      # Desktop release build
-└── README.md                    # This documentation
 ```
 
 ## Features Overview
