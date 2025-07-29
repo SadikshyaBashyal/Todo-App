@@ -5,15 +5,19 @@ A modern, cross-platform Todo application built with Flutter that supports task 
 This project is focused on android and desktop application development. Please check the app-release.apk for android, and desktop-application.zip for desktop to manage time with Day Care.
 
 
+
 ## Table of Contents
+- [How I made it](#how-I-made-it)
 0. [Screenshots](#screenshots)
 1. [Initial Setup](#initial-setup)
 2. [Installation Guide](#installation-guide)
 3. [Project Structure](#project-structure)
-4. [Code Implementation](#code-implementation)
-5. [Features Overview](#features-overview)
-6. [Deployment](#deployment)
-7. [Screenshots](#screenshots)
+4. [Features Overview](#features-overview)
+5. [Deployment](#deployment)
+
+## How I made it
+
+Before starting, all the steps and codes are given below. Please follow the steps to run in android. I wanted to work on the cross-platform project, and that's why I started project in Flutter. I don't know how to get started so I followed the tutorial to install and initialize the flutter template. However, I don't have android emulator so, I installed Android Studio to use one of their emulators and debug while coding. I had created the models to define the structure of the todo tasks, events and user models. I had a vision on how to keep things together and during coding my ideas got more clear and I could deliver more of it. Obviously, I took more time than the hackatime showed, to learn from documentation to code and debug the code, took help from AI to incubate the ideas more. 
 
 ## Screenshots
 
@@ -60,7 +64,7 @@ Below is the snippets of the Desktop Application in Light mode. Please download 
 </div>
 
 ## Initial Setup
-If you are new to cross-patform application development, below is a guide that will help you understand how to get started with Flutter:
+Here is the complete guide to start project in Flutter. 
 
 ### Prerequisites
 - Windows 10/11 (for this setup)
@@ -132,9 +136,6 @@ flutter run
 
 #### Web Development (VS Code)
 ```bash
-# Enable web support
-flutter config --enable-web
-
 # Run web version
 flutter run -d chrome
 ```
@@ -152,11 +153,9 @@ flutter run -d windows
 
 #### Android Development (Android Studio)
 ```bash
-# Enable Android support
-flutter config --enable-android
-
-# Run Android version
-flutter run -d android
+flutter emulators -d
+flutter emulators --lanuch Medium_Phone_API_36.0
+flutter run --debug
 ```
 
 ## Project Structure
@@ -213,142 +212,13 @@ Todo-App/
 └── README.md                    # This documentation
 ```
 
-## Code Implementation
-
-### 1. Data Models
-
-#### Todo Model (`lib/models/todo.dart`)
-- **Purpose**: Defines the structure for todo items
-- **Key Features**:
-  - Priority levels (urgent, high, medium, low)
-  - Recurring task support (daily, weekly, custom)
-  - Due date and time management
-  - Tag system for categorization
-  - Completion tracking
-
-
-#### Event Model (`lib/models/event.dart`)
-- **Purpose**: Manages calendar events
-- **Features**: Event scheduling, reminders, and calendar integration
-
-#### User Model (`lib/models/user.dart`)
-- **Purpose**: User authentication and profile management
-- **Features**: Multi-user support, profile data storage
-
-### 2. State Management
-
-#### TodoProvider (`lib/providers/todo_provider.dart`)
-- **Purpose**: Central state management for the application
-- **Key Responsibilities**:
-  - CRUD operations for todos and events
-  - User authentication state
-  - Data persistence using SharedPreferences
-  - Filtering and sorting functionality
-  - Multi-user support
-
-
-#### ThemeProvider (`lib/providers/theme_provider.dart`)
-- **Purpose**: Manages application theming
-- **Features**: Light/dark mode switching, custom color schemes
-
-### 3. User Interface
-
-#### Authentication Flow
-1. **LichalFrontPage** (`lib/screens/lichal_front_page.dart`)
-   - Landing page with login/signup options
-   - Modern UI with animations
-
-2. **Login/Signup Screens**
-   - User authentication interface
-   - Form validation and error handling
-
-#### Main Application
-1. **MainNavigation** (`lib/widgets/main_navigation.dart`)
-   - Bottom navigation bar
-   - Screen routing and state management
-
-2. **Home Screen** (`lib/screens/home_screen.dart`)
-   - Dashboard with task overview
-   - Quick actions and statistics
-
-3. **Task Management Screens**
-   - **AllTasksScreen**: Complete task list with filtering
-   - **TaskDetailScreen**: Detailed task view and editing
-   - **DailyRoutineScreen**: Daily task organization
-
-4. **Calendar Integration**
-   - **CalendarScreen**: Monthly calendar view
-   - **TimelineScreen**: Chronological task view
-
-### 4. Key Features Implemented
-
-#### Task Management
-- ✅ Create, edit, delete tasks
-- ✅ Priority levels and due dates
-- ✅ Recurring tasks (daily, weekly, custom)
-- ✅ Tag-based categorization
-- ✅ Task completion tracking
-
-#### User System
-- ✅ Multi-user support
-- ✅ User authentication
-- ✅ Profile management
-- ✅ Data isolation per user
-
-#### Calendar Integration
-- ✅ Calendar event creation
-- ✅ Event scheduling and reminders
-- ✅ Timeline view
-- ✅ Daily routine management
-
-#### Data Persistence
-- ✅ Local storage using SharedPreferences
-- ✅ User-specific data isolation
-- ✅ Automatic data synchronization
-
-#### UI/UX Features
-- ✅ Responsive design
-- ✅ Theme switching (light/dark)
-- ✅ Modern Material Design
-- ✅ Smooth animations
-- ✅ Cross-platform compatibility
-
 ## Features Overview
 
 ### Core Functionality
-1. **Task Management**
-   - Create, edit, and delete tasks
-   - Set priorities and due dates
-   - Add descriptions and tags
-   - Mark tasks as complete
-
-2. **Recurring Tasks**
-   - Daily, weekly, or custom recurrence
-   - End date specification
-   - Automatic task generation
-
-3. **Calendar Integration**
-   - Monthly calendar view
-   - Event scheduling
-   - Timeline visualization
-
-4. **User Management**
-   - Multi-user support
-   - User authentication
-   - Profile customization
-
-5. **Data Persistence**
-   - Local storage
-   - User-specific data
-   - Automatic synchronization
-
-### Advanced Features
-- **Priority System**: Urgent, High, Medium, Low priorities
-- **Tag System**: Categorize tasks with custom tags
-- **Filtering**: Filter by date, priority, tags, completion status
-- **Search**: Find tasks quickly
-- **Statistics**: Task completion analytics
-- **Themes**: Light and dark mode support
+1. Create, edit and delete tasks, priorities, tags, due dates and many more.
+2. Recur tasks as per your need
+3. Update and see the calendar for upcoming events, birthdays and recur on your days.
+4. Multi-User support saving data in local storage.
 
 ## Deployment
 
@@ -356,40 +226,36 @@ Todo-App/
 ```bash
 # Build APK
 flutter build apk --release --no-tree-shake-icons
-
-# Build App Bundle (recommended for Play Store)
-flutter build appbundle --release
 ```
 
-### Web Deployment (GitHub Pages)
+### Desktop Deployment
 ```bash
-# Build web version
-flutter build web --release
+# Windows
+flutter build windows --release
+```
 
+### Release Files
+- `app-release.apk`: Android application package
+- `desktop-application.zip`: Desktop application bundle
+
+### Web Deployment (GitHub)
+```bash
 # Deploy to GitHub Pages
 # 1. Create a new repository or use existing one
 # 2. Build the web version
 flutter build web --release
 
-# 3. Navigate to build/web directory
-cd build/web
-
-# 4. Initialize git and push to GitHub Pages branch
-git init
+# 3. Push to GitHub Pages branch
 git add .
-git commit -m "Deploy to GitHub Pages"
-git branch -M main
-git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO_NAME.git
+git commit -m "Deploy"
 git push -u origin main
 
-# 5. Enable GitHub Pages in repository settings:
+# 4. Enable GitHub Pages in repository settings:
 # - Go to Settings > Pages
 # - Source: Deploy from a branch
 # - Branch: main
 # - Folder: / (root)
 ```
-
-#### Automatic Deployment with GitHub Actions
 The project includes a GitHub Actions workflow for automatic deployment:
 
 1. **Workflow File**: `.github/workflows/deploy.yml`
@@ -402,53 +268,15 @@ The project includes a GitHub Actions workflow for automatic deployment:
    - Branch: `gh-pages`
    - Folder: `/ (root)`
 
-The workflow will:
-- Build the Flutter web app
-- Deploy to `gh-pages` branch
-- Make app available at: `https://sadikshyabashyal.github.io/Todo-App`
-
-### Desktop Deployment
-```bash
-# Windows
-flutter build windows --release
-```
-
-### Release Files
-- `app-release.apk`: Android application package
-- `desktop-application.zip`: Desktop application bundle
-
-## Development Workflow
-
-### Recommended Development Environment
-1. **VS Code** with Flutter extension for web/desktop development
-2. **Android Studio** for Android development
-3. **Git** for version control
-
-### Code Organization
-- **Models**: Data structures and business logic
-- **Providers**: State management and data operations
-- **Screens**: Main UI pages
-- **Widgets**: Reusable UI components
-- **Utils/Helpers**: Utility functions and helpers
-
-### Best Practices Implemented
-- Separation of concerns
-- Provider pattern for state management
-- Responsive design principles
-- Cross-platform compatibility
-- Local data persistence
-- User authentication security
-
-## Conclusion
-
-This Todo-App is a comprehensive, production-ready application that demonstrates modern Flutter development practices. It includes user authentication, task management, calendar integration, and cross-platform deployment capabilities. The codebase is well-organized, maintainable, and follows Flutter best practices.
-
-For development, focus on the `lib/` directory where all the main application code resides. This project is focused on android and desktop application development. The platform-specific directories (`android/`, `ios/`, `web/`, etc.) contain configuration files for each platform deployment. 
+The workflow includes:
+- Built the Flutter web app
+- Deployed to `gh-pages` branch
+- Made available in: `https://sadikshyabashyal.github.io/Todo-App`
 
 ## Coded with AI
 This project was developed with the assistance of AI tools to create a comprehensive Todo application. The AI was used to:
 - For creation of the template to my ideas
 - Search for the various errors and learn about them 
-- Used for documentation template in ReadMe
+- Used for Project Structure in ReadMe
 
 
